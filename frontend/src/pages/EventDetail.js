@@ -425,158 +425,164 @@ const EventDetail = () => {
           )}
 
           {/* Merchandise Variant Selection - ABOVE register button */}
-          {event?.eventType === 'merchandise' && !alreadyRegistered && event.merchandiseDetails?.variants?.length > 0 && (
-            <div style={{ marginBottom: '20px', padding: '20px', background: COLORS.veryLightGray, borderRadius: '12px' }}>
-              <h3 style={{ margin: '0 0 20px 0', color: COLORS.primary, fontSize: '20px' }}>
-                🛍️ Select Your Options
-              </h3>
+          {event?.eventType === 'merchandise' && !alreadyRegistered && (() => {
+            const variantSizes = [...new Set(event.merchandiseDetails?.variants?.map(v => v.size).filter(Boolean) || [])];
+            const variantColors = [...new Set(event.merchandiseDetails?.variants?.map(v => v.color).filter(Boolean) || [])];
+            const sizes = variantSizes.length > 0 ? variantSizes : ['S', 'M', 'L', 'XL', 'XXL'];
+            const colors = variantColors.length > 0 ? variantColors : ['Black', 'White', 'Navy Blue'];
+            return true;
+          })() && (
+              <div style={{ marginBottom: '20px', padding: '20px', background: COLORS.veryLightGray, borderRadius: '12px' }}>
+                <h3 style={{ margin: '0 0 20px 0', color: COLORS.primary, fontSize: '20px' }}>
+                  🛍️ Select Your Options
+                </h3>
 
-              {event.merchandiseDetails?.itemName && (
-                <div style={{ marginBottom: '20px', padding: '12px', background: COLORS.white, borderRadius: '8px' }}>
-                  <strong>Item:</strong> {event.merchandiseDetails.itemName}
-                </div>
-              )}
-
-              {/* Size Selection */}
-              {(() => {
-                const sizes = [...new Set(event.merchandiseDetails.variants.map(v => v.size).filter(Boolean))];
-                if (sizes.length === 0) return null;
-                return (
-                  <div style={{ marginBottom: '20px' }}>
-                    <label style={{ display: 'block', marginBottom: '8px', color: COLORS.dark, fontWeight: '600' }}>
-                      Size *
-                    </label>
-                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                      {sizes.map(size => (
-                        <button
-                          key={size}
-                          onClick={() => setMerchandiseOrder({ ...merchandiseOrder, selectedSize: size })}
-                          style={{
-                            padding: '10px 20px',
-                            borderRadius: '8px',
-                            border: merchandiseOrder.selectedSize === size
-                              ? `2px solid ${COLORS.primary}`
-                              : `1px solid ${COLORS.lightGray}`,
-                            background: merchandiseOrder.selectedSize === size ? `${COLORS.primary}15` : COLORS.white,
-                            color: merchandiseOrder.selectedSize === size ? COLORS.primary : COLORS.dark,
-                            fontWeight: merchandiseOrder.selectedSize === size ? '600' : '400',
-                            cursor: 'pointer',
-                            fontSize: '14px',
-                          }}
-                        >
-                          {size}
-                        </button>
-                      ))}
-                    </div>
+                {event.merchandiseDetails?.itemName && (
+                  <div style={{ marginBottom: '20px', padding: '12px', background: COLORS.white, borderRadius: '8px' }}>
+                    <strong>Item:</strong> {event.merchandiseDetails.itemName}
                   </div>
-                );
-              })()}
+                )}
 
-              {/* Color Selection */}
-              {(() => {
-                const colors = [...new Set(event.merchandiseDetails.variants.map(v => v.color).filter(Boolean))];
-                if (colors.length === 0) return null;
-                return (
-                  <div style={{ marginBottom: '20px' }}>
-                    <label style={{ display: 'block', marginBottom: '8px', color: COLORS.dark, fontWeight: '600' }}>
-                      Color *
-                    </label>
-                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                      {colors.map(color => (
-                        <button
-                          key={color}
-                          onClick={() => setMerchandiseOrder({ ...merchandiseOrder, selectedColor: color })}
-                          style={{
-                            padding: '10px 20px',
-                            borderRadius: '8px',
-                            border: merchandiseOrder.selectedColor === color
-                              ? `2px solid ${COLORS.primary}`
-                              : `1px solid ${COLORS.lightGray}`,
-                            background: merchandiseOrder.selectedColor === color ? `${COLORS.primary}15` : COLORS.white,
-                            color: merchandiseOrder.selectedColor === color ? COLORS.primary : COLORS.dark,
-                            fontWeight: merchandiseOrder.selectedColor === color ? '600' : '400',
-                            cursor: 'pointer',
-                            fontSize: '14px',
-                          }}
-                        >
-                          {color}
-                        </button>
-                      ))}
+                {/* Size Selection */}
+                {(() => {
+                  const variantSizes = [...new Set(event.merchandiseDetails?.variants?.map(v => v.size).filter(Boolean) || [])];
+                  const sizes = variantSizes.length > 0 ? variantSizes : ['S', 'M', 'L', 'XL', 'XXL'];
+                  return (
+                    <div style={{ marginBottom: '20px' }}>
+                      <label style={{ display: 'block', marginBottom: '8px', color: COLORS.dark, fontWeight: '600' }}>
+                        Size *
+                      </label>
+                      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                        {sizes.map(size => (
+                          <button
+                            key={size}
+                            onClick={() => setMerchandiseOrder({ ...merchandiseOrder, selectedSize: size })}
+                            style={{
+                              padding: '10px 20px',
+                              borderRadius: '8px',
+                              border: merchandiseOrder.selectedSize === size
+                                ? `2px solid ${COLORS.primary}`
+                                : `1px solid ${COLORS.lightGray}`,
+                              background: merchandiseOrder.selectedSize === size ? `${COLORS.primary}15` : COLORS.white,
+                              color: merchandiseOrder.selectedSize === size ? COLORS.primary : COLORS.dark,
+                              fontWeight: merchandiseOrder.selectedSize === size ? '600' : '400',
+                              cursor: 'pointer',
+                              fontSize: '14px',
+                            }}
+                          >
+                            {size}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                );
-              })()}
+                  );
+                })()}
 
-              {/* Quantity Selection */}
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', marginBottom: '8px', color: COLORS.dark, fontWeight: '600' }}>
-                  Quantity
-                </label>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <button
-                    onClick={() => setMerchandiseOrder({ ...merchandiseOrder, quantity: Math.max(1, merchandiseOrder.quantity - 1) })}
-                    style={{
-                      ...STYLES.button,
-                      width: '40px', height: '40px', padding: '0',
-                      background: COLORS.lightGray, color: COLORS.dark, fontSize: '20px',
-                    }}
-                  >
-                    −
-                  </button>
-                  <span style={{ fontSize: '20px', fontWeight: '600', minWidth: '40px', textAlign: 'center' }}>
-                    {merchandiseOrder.quantity}
-                  </span>
-                  <button
-                    onClick={() => setMerchandiseOrder({
-                      ...merchandiseOrder,
-                      quantity: Math.min(event.merchandiseDetails?.purchaseLimitPerParticipant || 5, merchandiseOrder.quantity + 1)
-                    })}
-                    style={{
-                      ...STYLES.button,
-                      width: '40px', height: '40px', padding: '0',
-                      background: COLORS.primary, color: COLORS.white, fontSize: '20px',
-                    }}
-                  >
-                    +
-                  </button>
-                  <span style={{ fontSize: '14px', color: COLORS.darkGray }}>
-                    (Max: {event.merchandiseDetails?.purchaseLimitPerParticipant || 5} per person)
-                  </span>
+                {/* Color Selection */}
+                {(() => {
+                  const variantColors = [...new Set(event.merchandiseDetails?.variants?.map(v => v.color).filter(Boolean) || [])];
+                  const colors = variantColors.length > 0 ? variantColors : ['Black', 'White', 'Navy Blue'];
+                  return (
+                    <div style={{ marginBottom: '20px' }}>
+                      <label style={{ display: 'block', marginBottom: '8px', color: COLORS.dark, fontWeight: '600' }}>
+                        Color *
+                      </label>
+                      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                        {colors.map(color => (
+                          <button
+                            key={color}
+                            onClick={() => setMerchandiseOrder({ ...merchandiseOrder, selectedColor: color })}
+                            style={{
+                              padding: '10px 20px',
+                              borderRadius: '8px',
+                              border: merchandiseOrder.selectedColor === color
+                                ? `2px solid ${COLORS.primary}`
+                                : `1px solid ${COLORS.lightGray}`,
+                              background: merchandiseOrder.selectedColor === color ? `${COLORS.primary}15` : COLORS.white,
+                              color: merchandiseOrder.selectedColor === color ? COLORS.primary : COLORS.dark,
+                              fontWeight: merchandiseOrder.selectedColor === color ? '600' : '400',
+                              cursor: 'pointer',
+                              fontSize: '14px',
+                            }}
+                          >
+                            {color}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Quantity Selection */}
+                <div style={{ marginBottom: '20px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', color: COLORS.dark, fontWeight: '600' }}>
+                    Quantity
+                  </label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <button
+                      onClick={() => setMerchandiseOrder({ ...merchandiseOrder, quantity: Math.max(1, merchandiseOrder.quantity - 1) })}
+                      style={{
+                        ...STYLES.button,
+                        width: '40px', height: '40px', padding: '0',
+                        background: COLORS.lightGray, color: COLORS.dark, fontSize: '20px',
+                      }}
+                    >
+                      −
+                    </button>
+                    <span style={{ fontSize: '20px', fontWeight: '600', minWidth: '40px', textAlign: 'center' }}>
+                      {merchandiseOrder.quantity}
+                    </span>
+                    <button
+                      onClick={() => setMerchandiseOrder({
+                        ...merchandiseOrder,
+                        quantity: Math.min(event.merchandiseDetails?.purchaseLimitPerParticipant || 5, merchandiseOrder.quantity + 1)
+                      })}
+                      style={{
+                        ...STYLES.button,
+                        width: '40px', height: '40px', padding: '0',
+                        background: COLORS.primary, color: COLORS.white, fontSize: '20px',
+                      }}
+                    >
+                      +
+                    </button>
+                    <span style={{ fontSize: '14px', color: COLORS.darkGray }}>
+                      (Max: {event.merchandiseDetails?.purchaseLimitPerParticipant || 5} per person)
+                    </span>
+                  </div>
                 </div>
+
+                {/* Selected Variant Price */}
+                {merchandiseOrder.selectedSize && (() => {
+                  const matchingVariant = event.merchandiseDetails.variants.find(
+                    v => v.size === merchandiseOrder.selectedSize &&
+                      (!merchandiseOrder.selectedColor || v.color === merchandiseOrder.selectedColor)
+                  );
+                  if (!matchingVariant) return null;
+                  return (
+                    <div style={{
+                      padding: '16px',
+                      background: `${COLORS.secondary}15`,
+                      borderRadius: '8px',
+                      border: `1px solid ${COLORS.secondary}`,
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                          <strong>Selected:</strong> {merchandiseOrder.selectedSize}
+                          {merchandiseOrder.selectedColor && ` / ${merchandiseOrder.selectedColor}`}
+                          {' × '}{merchandiseOrder.quantity}
+                        </div>
+                        <div style={{ fontSize: '24px', fontWeight: '700', color: COLORS.secondary }}>
+                          ₹{matchingVariant.price * merchandiseOrder.quantity}
+                        </div>
+                      </div>
+                      <div style={{ fontSize: '12px', color: COLORS.darkGray, marginTop: '8px' }}>
+                        Stock available: {matchingVariant.stockQuantity}
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
-
-              {/* Selected Variant Price */}
-              {merchandiseOrder.selectedSize && (() => {
-                const matchingVariant = event.merchandiseDetails.variants.find(
-                  v => v.size === merchandiseOrder.selectedSize &&
-                    (!merchandiseOrder.selectedColor || v.color === merchandiseOrder.selectedColor)
-                );
-                if (!matchingVariant) return null;
-                return (
-                  <div style={{
-                    padding: '16px',
-                    background: `${COLORS.secondary}15`,
-                    borderRadius: '8px',
-                    border: `1px solid ${COLORS.secondary}`,
-                  }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div>
-                        <strong>Selected:</strong> {merchandiseOrder.selectedSize}
-                        {merchandiseOrder.selectedColor && ` / ${merchandiseOrder.selectedColor}`}
-                        {' × '}{merchandiseOrder.quantity}
-                      </div>
-                      <div style={{ fontSize: '24px', fontWeight: '700', color: COLORS.secondary }}>
-                        ₹{matchingVariant.price * merchandiseOrder.quantity}
-                      </div>
-                    </div>
-                    <div style={{ fontSize: '12px', color: COLORS.darkGray, marginTop: '8px' }}>
-                      Stock available: {matchingVariant.stockQuantity}
-                    </div>
-                  </div>
-                );
-              })()}
-            </div>
-          )}
+            )}
 
           {/* Registration Status / Button */}
           {alreadyRegistered ? (

@@ -32,7 +32,7 @@ const ParticipantDashboard = () => {
       });
 
       const now = new Date();
-      const available = eventsResponse.data.events.filter(event => 
+      const available = eventsResponse.data.events.filter(event =>
         new Date(event.registrationDeadline) > now
       );
 
@@ -123,18 +123,18 @@ const ParticipantDashboard = () => {
 
   const normalRegistrations = myRegistrations.filter(reg => reg.eventId?.eventType === 'normal');
   const merchandiseRegistrations = myRegistrations.filter(reg => reg.eventId?.eventType === 'merchandise');
-  
+
   const completedRegistrations = myRegistrations.filter(reg => {
     const event = reg.eventId;
     return event && new Date(event.eventEndDate) < now && reg.status === 'confirmed';
   });
 
-  const cancelledRegistrations = myRegistrations.filter(reg => 
+  const cancelledRegistrations = myRegistrations.filter(reg =>
     ['cancelled', 'waitlisted'].includes(reg.status)
   );
 
   const getTabRegistrations = () => {
-    switch(activeTab) {
+    switch (activeTab) {
       case 'upcoming': return upcomingRegistrations;
       case 'normal': return normalRegistrations;
       case 'merchandise': return merchandiseRegistrations;
@@ -147,10 +147,10 @@ const ParticipantDashboard = () => {
   return (
     <div style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', minHeight: '100vh', padding: '20px' }}>
       {/* Header Section with Stats */}
-      <div style={{ 
-        background: 'white', 
-        borderRadius: '15px', 
-        padding: '30px', 
+      <div style={{
+        background: 'white',
+        borderRadius: '15px',
+        padding: '30px',
         marginBottom: '30px',
         boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
       }}>
@@ -158,13 +158,13 @@ const ParticipantDashboard = () => {
           🎉 Welcome back, {user?.firstName} {user?.lastName}!
         </h2>
         <p style={{ margin: '5px 0', color: '#666', fontSize: '16px' }}>
-          📧 {user?.email} | 
+          📧 {user?.email} |
           {user?.participantType === 'iiit' ? ' 🎓 IIIT Student' : ' 🌐 External Participant'}
         </p>
         <div style={{ display: 'flex', gap: '20px', marginTop: '20px', flexWrap: 'wrap' }}>
-          <div style={{ 
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
-            padding: '15px 25px', 
+          <div style={{
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            padding: '15px 25px',
             borderRadius: '10px',
             color: 'white',
             flex: 1,
@@ -174,9 +174,9 @@ const ParticipantDashboard = () => {
             <div style={{ fontSize: '28px', fontWeight: 'bold' }}>{upcomingRegistrations.length}</div>
             <div style={{ fontSize: '14px', opacity: 0.9 }}>Upcoming Events</div>
           </div>
-          <div style={{ 
-            background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', 
-            padding: '15px 25px', 
+          <div style={{
+            background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+            padding: '15px 25px',
             borderRadius: '10px',
             color: 'white',
             flex: 1,
@@ -186,9 +186,9 @@ const ParticipantDashboard = () => {
             <div style={{ fontSize: '28px', fontWeight: 'bold' }}>{myRegistrations.length}</div>
             <div style={{ fontSize: '14px', opacity: 0.9 }}>Total Registrations</div>
           </div>
-          <div style={{ 
-            background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', 
-            padding: '15px 25px', 
+          <div style={{
+            background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+            padding: '15px 25px',
             borderRadius: '10px',
             color: 'white',
             flex: 1,
@@ -203,8 +203,8 @@ const ParticipantDashboard = () => {
 
       {/* Alerts */}
       {error && (
-        <div style={{ 
-          marginBottom: '20px', 
+        <div style={{
+          marginBottom: '20px',
           padding: '15px 20px',
           borderRadius: '10px',
           background: '#fee',
@@ -214,9 +214,9 @@ const ParticipantDashboard = () => {
           ❌ {error}
         </div>
       )}
-      
+
       {success && (
-        <div style={{ 
+        <div style={{
           marginBottom: '20px',
           padding: '15px 20px',
           borderRadius: '10px',
@@ -229,7 +229,7 @@ const ParticipantDashboard = () => {
       )}
 
       {/* My Registrations Section */}
-      <div style={{ 
+      <div style={{
         marginBottom: '20px',
         background: 'white',
         borderRadius: '15px',
@@ -239,12 +239,12 @@ const ParticipantDashboard = () => {
         <h3 style={{ margin: '0 0 20px 0', color: '#667eea', fontSize: '24px' }}>
           📋 My Registrations ({myRegistrations.length})
         </h3>
-        
+
         {/* Tabs */}
-        <div style={{ 
-          display: 'flex', 
-          gap: '10px', 
-          marginTop: '15px', 
+        <div style={{
+          display: 'flex',
+          gap: '10px',
+          marginTop: '15px',
           borderBottom: '3px solid #e0e0e0',
           flexWrap: 'wrap'
         }}>
@@ -255,7 +255,7 @@ const ParticipantDashboard = () => {
             { key: 'completed', icon: '✅', label: 'Completed', count: completedRegistrations.length },
             { key: 'cancelled', icon: '❌', label: 'Cancelled', count: cancelledRegistrations.length }
           ].map(tab => (
-            <button 
+            <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               style={{
@@ -301,9 +301,9 @@ const ParticipantDashboard = () => {
                     'pending': '#ff9800',
                     'waitlisted': '#9e9e9e'
                   };
-                  
+
                   return (
-                    <tr key={registration._id} style={{ 
+                    <tr key={registration._id} style={{
                       background: 'white',
                       boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                       transition: 'all 0.2s'
@@ -391,9 +391,9 @@ const ParticipantDashboard = () => {
             </table>
           </div>
         ) : (
-          <div style={{ 
-            padding: '40px', 
-            textAlign: 'center', 
+          <div style={{
+            padding: '40px',
+            textAlign: 'center',
             color: '#999',
             marginTop: '20px'
           }}>
@@ -404,7 +404,7 @@ const ParticipantDashboard = () => {
       </div>
 
       {/* Available Events Section */}
-      <div style={{ 
+      <div style={{
         background: 'white',
         borderRadius: '15px',
         padding: '30px',
@@ -413,7 +413,7 @@ const ParticipantDashboard = () => {
         <h3 style={{ margin: '0 0 20px 0', color: '#667eea', fontSize: '24px' }}>
           🎪 Available Events ({eventsToShow.length})
         </h3>
-        
+
         {eventsToShow.length > 0 ? (
           <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0 10px' }}>
             <thead>
@@ -459,8 +459,8 @@ const ParticipantDashboard = () => {
                       disabled={event.currentRegistrations >= event.registrationLimit}
                       style={{
                         padding: '8px 16px',
-                        background: event.currentRegistrations >= event.registrationLimit 
-                          ? '#ccc' 
+                        background: event.currentRegistrations >= event.registrationLimit
+                          ? '#ccc'
                           : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                         border: 'none',
                         borderRadius: '20px',
@@ -560,68 +560,127 @@ const ParticipantDashboard = () => {
                 </div>
               )}
 
-              {selectedEvent.eventType === 'merchandise' && (
-                <div>
-                  <h4>Select Item</h4>
-                  <p><strong>Item:</strong> {selectedEvent.merchandiseDetails?.itemName}</p>
-                  <p><strong>Purchase Limit:</strong> {selectedEvent.merchandiseDetails?.purchaseLimitPerParticipant} per person</p>
-                  
-                  <div className="form-group">
-                    <label>Size</label>
-                    <select
-                      required
-                      onChange={(e) => setRegistrationData({
-                        ...registrationData,
-                        merchandiseOrder: {
-                          ...registrationData.merchandiseOrder,
-                          size: e.target.value
-                        }
-                      })}
-                    >
-                      <option value="">Select Size</option>
-                      {[...new Set(selectedEvent.merchandiseDetails?.variants?.map(v => v.size))].map(size => (
-                        <option key={size} value={size}>{size}</option>
-                      ))}
-                    </select>
-                  </div>
+              {selectedEvent.eventType === 'merchandise' && (() => {
+                const variantSizes = [...new Set(selectedEvent.merchandiseDetails?.variants?.map(v => v.size).filter(Boolean) || [])];
+                const variantColors = [...new Set(selectedEvent.merchandiseDetails?.variants?.map(v => v.color).filter(Boolean) || [])];
+                const sizes = variantSizes.length > 0 ? variantSizes : ['S', 'M', 'L', 'XL', 'XXL'];
+                const colors = variantColors.length > 0 ? variantColors : ['Black', 'White', 'Navy Blue'];
+                const currentOrder = registrationData.merchandiseOrder || {};
+                const maxQty = selectedEvent.merchandiseDetails?.purchaseLimitPerParticipant || 5;
 
-                  <div className="form-group">
-                    <label>Color</label>
-                    <select
-                      required
-                      onChange={(e) => setRegistrationData({
-                        ...registrationData,
-                        merchandiseOrder: {
-                          ...registrationData.merchandiseOrder,
-                          color: e.target.value
-                        }
-                      })}
-                    >
-                      <option value="">Select Color</option>
-                      {[...new Set(selectedEvent.merchandiseDetails?.variants?.map(v => v.color))].map(color => (
-                        <option key={color} value={color}>{color}</option>
-                      ))}
-                    </select>
-                  </div>
+                return (
+                  <div>
+                    <h4>Select Item</h4>
+                    {selectedEvent.merchandiseDetails?.itemName && (
+                      <p><strong>Item:</strong> {selectedEvent.merchandiseDetails.itemName}</p>
+                    )}
+                    <p><strong>Purchase Limit:</strong> {maxQty} per person</p>
 
-                  <div className="form-group">
-                    <label>Quantity</label>
-                    <input
-                      type="number"
-                      min="1"
-                      max={selectedEvent.merchandiseDetails?.purchaseLimitPerParticipant}
-                      required
-                      onChange={(e) => setRegistrationData({
-                        ...registrationData,
-                        merchandiseOrder: {
-                          ...registrationData.merchandiseOrder,
-                          quantity: parseInt(e.target.value)
-                        }
-                      })}
-                    />
+                    {/* Size Selection */}
+                    <div style={{ marginBottom: '16px' }}>
+                      <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>Size *</label>
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        {sizes.map(size => (
+                          <button
+                            key={size}
+                            type="button"
+                            onClick={() => setRegistrationData({
+                              ...registrationData,
+                              merchandiseOrder: { ...currentOrder, size }
+                            })}
+                            style={{
+                              padding: '8px 18px',
+                              borderRadius: '8px',
+                              border: currentOrder.size === size ? '2px solid #667eea' : '1px solid #ddd',
+                              background: currentOrder.size === size ? '#667eea15' : 'white',
+                              color: currentOrder.size === size ? '#667eea' : '#333',
+                              fontWeight: currentOrder.size === size ? '700' : '400',
+                              cursor: 'pointer',
+                              fontSize: '14px',
+                            }}
+                          >
+                            {size}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Color Selection */}
+                    <div style={{ marginBottom: '16px' }}>
+                      <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>Color *</label>
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        {colors.map(color => (
+                          <button
+                            key={color}
+                            type="button"
+                            onClick={() => setRegistrationData({
+                              ...registrationData,
+                              merchandiseOrder: { ...currentOrder, color }
+                            })}
+                            style={{
+                              padding: '8px 18px',
+                              borderRadius: '8px',
+                              border: currentOrder.color === color ? '2px solid #667eea' : '1px solid #ddd',
+                              background: currentOrder.color === color ? '#667eea15' : 'white',
+                              color: currentOrder.color === color ? '#667eea' : '#333',
+                              fontWeight: currentOrder.color === color ? '700' : '400',
+                              cursor: 'pointer',
+                              fontSize: '14px',
+                            }}
+                          >
+                            {color}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Quantity Selection */}
+                    <div style={{ marginBottom: '16px' }}>
+                      <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>Quantity</label>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <button
+                          type="button"
+                          onClick={() => setRegistrationData({
+                            ...registrationData,
+                            merchandiseOrder: { ...currentOrder, quantity: Math.max(1, (currentOrder.quantity || 1) - 1) }
+                          })}
+                          style={{
+                            width: '36px', height: '36px', borderRadius: '8px',
+                            border: '1px solid #ddd', background: '#f5f5f5',
+                            cursor: 'pointer', fontSize: '18px', fontWeight: 'bold'
+                          }}
+                        >−</button>
+                        <span style={{ fontSize: '18px', fontWeight: '600', minWidth: '30px', textAlign: 'center' }}>
+                          {currentOrder.quantity || 1}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setRegistrationData({
+                            ...registrationData,
+                            merchandiseOrder: { ...currentOrder, quantity: Math.min(maxQty, (currentOrder.quantity || 1) + 1) }
+                          })}
+                          style={{
+                            width: '36px', height: '36px', borderRadius: '8px',
+                            border: '1px solid #667eea', background: '#667eea',
+                            color: 'white', cursor: 'pointer', fontSize: '18px', fontWeight: 'bold'
+                          }}
+                        >+</button>
+                        <span style={{ fontSize: '13px', color: '#999' }}>(Max: {maxQty})</span>
+                      </div>
+                    </div>
+
+                    {/* Selection Summary */}
+                    {currentOrder.size && currentOrder.color && (
+                      <div style={{
+                        padding: '12px', background: '#e8f5e9', borderRadius: '8px',
+                        border: '1px solid #4CAF50', marginBottom: '16px'
+                      }}>
+                        <strong>Selected:</strong> {currentOrder.size} / {currentOrder.color} × {currentOrder.quantity || 1}
+                      </div>
+                    )}
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               <div className="modal-buttons">
                 <button
