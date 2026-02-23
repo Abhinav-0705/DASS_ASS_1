@@ -12,7 +12,7 @@ const EventDetail = () => {
   const { eventId } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
-  
+
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -20,6 +20,11 @@ const EventDetail = () => {
   const [registering, setRegistering] = useState(false);
   const [alreadyRegistered, setAlreadyRegistered] = useState(false);
   const [userRegistration, setUserRegistration] = useState(null);
+  const [merchandiseOrder, setMerchandiseOrder] = useState({
+    selectedSize: '',
+    selectedColor: '',
+    quantity: 1,
+  });
 
   useEffect(() => {
     fetchEventDetails();
@@ -30,7 +35,7 @@ const EventDetail = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      
+
       const response = await api.get(`/events/${eventId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -50,7 +55,7 @@ const EventDetail = () => {
   const checkRegistration = async () => {
     try {
       const token = localStorage.getItem('token');
-      
+
       const response = await api.get('/registrations/my-registrations', {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -65,9 +70,9 @@ const EventDetail = () => {
           return regEventId === eventId;
         }
       );
-      
+
       console.log('Found registration:', registration);
-      
+
       if (registration) {
         setAlreadyRegistered(true);
         setUserRegistration(registration);
@@ -88,19 +93,30 @@ const EventDetail = () => {
     try {
       setRegistering(true);
       setError('');
-      
+
       const token = localStorage.getItem('token');
-      
+
+      const payload = { eventId: event._id };
+
+      // Include merchandise order details for merchandise events
+      if (event.eventType === 'merchandise') {
+        payload.merchandiseOrder = {
+          size: merchandiseOrder.selectedSize,
+          color: merchandiseOrder.selectedColor,
+          quantity: merchandiseOrder.quantity,
+        };
+      }
+
       await api.post(
         '/registrations',
-        { eventId: event._id },
+        payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
       setSuccess('Successfully registered for the event!');
       setAlreadyRegistered(true);
       setRegistering(false);
-      
+
       // Refresh event details and registration status
       await fetchEventDetails();
       await checkRegistration();
@@ -113,10 +129,10 @@ const EventDetail = () => {
 
   const formatDate = (dateString) => {
     if (!dateString) return 'Not specified';
-    
+
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return 'Not specified';
-    
+
     return date.toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
@@ -127,10 +143,10 @@ const EventDetail = () => {
 
   const formatTime = (dateString) => {
     if (!dateString) return '';
-    
+
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return '';
-    
+
     return date.toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit'
@@ -162,14 +178,14 @@ const EventDetail = () => {
 
     const now = new Date();
     const deadline = new Date(event.registrationDeadline);
-    
+
     if (!isNaN(deadline.getTime()) && deadline < now) {
       return '⏰ Registration deadline has passed';
     }
 
     if (event.currentRegistrations >= event.registrationLimit) {
-      return event.eventType === 'merchandise' 
-        ? '📦 Stock exhausted' 
+      return event.eventType === 'merchandise'
+        ? '📦 Stock exhausted'
         : '🎫 Registration limit reached';
     }
 
@@ -270,17 +286,17 @@ const EventDetail = () => {
                 </span>
                 <span style={{
                   padding: '4px 12px',
-                  background: 
+                  background:
                     event?.eligibility === 'all' ? COLORS.info :
-                    event?.eligibility === 'iiit_only' ? COLORS.primary :
-                    COLORS.accent,
+                      event?.eligibility === 'iiit_only' ? COLORS.primary :
+                        COLORS.accent,
                   color: COLORS.white,
                   borderRadius: '12px',
                   fontSize: '12px',
                   fontWeight: '600'
                 }}>
-                  {event?.eligibility === 'all' ? 'ALL' : 
-                   event?.eligibility === 'iiit_only' ? 'IIIT ONLY' : 'EXTERNAL ONLY'}
+                  {event?.eligibility === 'all' ? 'ALL' :
+                    event?.eligibility === 'iiit_only' ? 'IIIT ONLY' : 'EXTERNAL ONLY'}
                 </span>
               </div>
             </div>
@@ -398,7 +414,7 @@ const EventDetail = () => {
           {alreadyRegistered ? (
             <div style={{ marginTop: '20px' }}>
               {userRegistration?.ticketId ? (
-                <TicketQRCode 
+                <TicketQRCode
                   ticketId={userRegistration.ticketId}
                   eventName={event.eventName}
                   participantName={user?.name || user?.email}
@@ -435,12 +451,174 @@ const EventDetail = () => {
               }}
             >
               {registering ? 'Registering...' :
-               !canReg ? 'Registration Not Available' :
-               event.eventType === 'merchandise' ? `🛒 Purchase for ₹${event.registrationFee}` :
-               `🎫 Register for ₹${event.registrationFee}`}
+                !canReg ? 'Registration Not Available' :
+                  `🎫 Register for Event${event.registrationFee ? ` - ₹${event.registrationFee}` : ''}`}
             </button>
           )}
         </div>
+
+        {/* Merchandise Variant Selection - Show before registration */}
+        {event?.eventType === 'merchandise' && !alreadyRegistered && event.merchandiseDetails?.variants?.length > 0 && (
+          <div style={{ ...STYLES.card, marginBottom: '20px' }}>
+            <h3 style={{ margin: '0 0 20px 0', color: COLORS.primary, fontSize: '20px' }}>
+              🛍️ Select Your Options
+            </h3>
+
+            {/* Item Name */}
+            {event.merchandiseDetails?.itemName && (
+              <div style={{ marginBottom: '20px', padding: '12px', background: COLORS.veryLightGray, borderRadius: '8px' }}>
+                <strong>Item:</strong> {event.merchandiseDetails.itemName}
+              </div>
+            )}
+
+            {/* Size Selection */}
+            {(() => {
+              const sizes = [...new Set(event.merchandiseDetails.variants.map(v => v.size).filter(Boolean))];
+              if (sizes.length === 0) return null;
+              return (
+                <div style={{ marginBottom: '20px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', color: COLORS.dark, fontWeight: '600' }}>
+                    Size *
+                  </label>
+                  <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                    {sizes.map(size => (
+                      <button
+                        key={size}
+                        onClick={() => setMerchandiseOrder({ ...merchandiseOrder, selectedSize: size })}
+                        style={{
+                          padding: '10px 20px',
+                          borderRadius: '8px',
+                          border: merchandiseOrder.selectedSize === size
+                            ? `2px solid ${COLORS.primary}`
+                            : `1px solid ${COLORS.lightGray}`,
+                          background: merchandiseOrder.selectedSize === size ? `${COLORS.primary}15` : COLORS.white,
+                          color: merchandiseOrder.selectedSize === size ? COLORS.primary : COLORS.dark,
+                          fontWeight: merchandiseOrder.selectedSize === size ? '600' : '400',
+                          cursor: 'pointer',
+                          fontSize: '14px',
+                        }}
+                      >
+                        {size}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Color Selection */}
+            {(() => {
+              const colors = [...new Set(event.merchandiseDetails.variants.map(v => v.color).filter(Boolean))];
+              if (colors.length === 0) return null;
+              return (
+                <div style={{ marginBottom: '20px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', color: COLORS.dark, fontWeight: '600' }}>
+                    Color *
+                  </label>
+                  <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                    {colors.map(color => (
+                      <button
+                        key={color}
+                        onClick={() => setMerchandiseOrder({ ...merchandiseOrder, selectedColor: color })}
+                        style={{
+                          padding: '10px 20px',
+                          borderRadius: '8px',
+                          border: merchandiseOrder.selectedColor === color
+                            ? `2px solid ${COLORS.primary}`
+                            : `1px solid ${COLORS.lightGray}`,
+                          background: merchandiseOrder.selectedColor === color ? `${COLORS.primary}15` : COLORS.white,
+                          color: merchandiseOrder.selectedColor === color ? COLORS.primary : COLORS.dark,
+                          fontWeight: merchandiseOrder.selectedColor === color ? '600' : '400',
+                          cursor: 'pointer',
+                          fontSize: '14px',
+                        }}
+                      >
+                        {color}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Quantity Selection */}
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', marginBottom: '8px', color: COLORS.dark, fontWeight: '600' }}>
+                Quantity
+              </label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <button
+                  onClick={() => setMerchandiseOrder({ ...merchandiseOrder, quantity: Math.max(1, merchandiseOrder.quantity - 1) })}
+                  style={{
+                    ...STYLES.button,
+                    width: '40px',
+                    height: '40px',
+                    padding: '0',
+                    background: COLORS.lightGray,
+                    color: COLORS.dark,
+                    fontSize: '20px',
+                  }}
+                >
+                  −
+                </button>
+                <span style={{ fontSize: '20px', fontWeight: '600', minWidth: '40px', textAlign: 'center' }}>
+                  {merchandiseOrder.quantity}
+                </span>
+                <button
+                  onClick={() => setMerchandiseOrder({
+                    ...merchandiseOrder,
+                    quantity: Math.min(event.merchandiseDetails?.purchaseLimitPerParticipant || 5, merchandiseOrder.quantity + 1)
+                  })}
+                  style={{
+                    ...STYLES.button,
+                    width: '40px',
+                    height: '40px',
+                    padding: '0',
+                    background: COLORS.primary,
+                    color: COLORS.white,
+                    fontSize: '20px',
+                  }}
+                >
+                  +
+                </button>
+                <span style={{ fontSize: '14px', color: COLORS.darkGray }}>
+                  (Max: {event.merchandiseDetails?.purchaseLimitPerParticipant || 5} per person)
+                </span>
+              </div>
+            </div>
+
+            {/* Selected Variant Price */}
+            {merchandiseOrder.selectedSize && (() => {
+              const matchingVariant = event.merchandiseDetails.variants.find(
+                v => v.size === merchandiseOrder.selectedSize &&
+                  (!merchandiseOrder.selectedColor || v.color === merchandiseOrder.selectedColor)
+              );
+              if (!matchingVariant) return null;
+              return (
+                <div style={{
+                  padding: '16px',
+                  background: `${COLORS.secondary}15`,
+                  borderRadius: '8px',
+                  border: `1px solid ${COLORS.secondary}`,
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <strong>Selected:</strong> {merchandiseOrder.selectedSize}
+                      {merchandiseOrder.selectedColor && ` / ${merchandiseOrder.selectedColor}`}
+                      {' × '}{merchandiseOrder.quantity}
+                    </div>
+                    <div style={{ fontSize: '24px', fontWeight: '700', color: COLORS.secondary }}>
+                      ₹{matchingVariant.price * merchandiseOrder.quantity}
+                    </div>
+                  </div>
+                  <div style={{ fontSize: '12px', color: COLORS.darkGray, marginTop: '8px' }}>
+                    Stock available: {matchingVariant.stockQuantity}
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        )}
 
         {/* Event Details Grid */}
         <div style={{
@@ -484,8 +662,8 @@ const EventDetail = () => {
               color: spotsLeft === 0 ? COLORS.accent : spotsLeft < 10 ? '#856404' : '#155724'
             }}>
               {spotsLeft === 0 ? '🚫 Sold Out' :
-               spotsLeft < 10 ? '⚠️ Limited Spots!' :
-               '✅ Available'}
+                spotsLeft < 10 ? '⚠️ Limited Spots!' :
+                  '✅ Available'}
             </div>
           </div>
 
@@ -567,92 +745,91 @@ const EventDetail = () => {
         )}
 
         {/* Payment Proof Upload - Only show for merchandise if registered but not approved */}
-        {event?.eventType === 'merchandise' && 
-         alreadyRegistered && 
-         userRegistration && 
-         !userRegistration.paymentProof && 
-         userRegistration.paymentApprovalStatus !== 'approved' && (
-          <div style={{ marginTop: '20px' }}>
-            <PaymentProofUpload 
-              registrationId={userRegistration._id} 
-              onSuccess={() => {
-                setSuccess('Payment proof uploaded successfully! Awaiting organizer approval.');
-                checkRegistration();
-              }} 
-            />
-          </div>
-        )}
+        {event?.eventType === 'merchandise' &&
+          alreadyRegistered &&
+          userRegistration &&
+          !userRegistration.paymentProof &&
+          userRegistration.paymentApprovalStatus !== 'approved' && (
+            <div style={{ marginTop: '20px' }}>
+              <PaymentProofUpload
+                registrationId={userRegistration._id}
+                onSuccess={() => {
+                  setSuccess('Payment proof uploaded successfully! Awaiting organizer approval.');
+                  checkRegistration();
+                }}
+              />
+            </div>
+          )}
 
         {/* Payment Status Display */}
-        {event?.eventType === 'merchandise' && 
-         alreadyRegistered && 
-         userRegistration && 
-         userRegistration.paymentProof && (
-          <div style={{ marginTop: '20px' }}>
-            <div style={{
-              ...STYLES.card,
-              background: userRegistration.paymentApprovalStatus === 'approved' 
-                ? `${COLORS.secondary}15`
-                : userRegistration.paymentApprovalStatus === 'rejected'
-                ? `${COLORS.accent}15`
-                : `${COLORS.warning}15`,
-              border: `2px solid ${
-                userRegistration.paymentApprovalStatus === 'approved' 
-                ? COLORS.secondary
-                : userRegistration.paymentApprovalStatus === 'rejected'
-                ? COLORS.accent
-                : COLORS.warning
-              }`
-            }}>
-              <h3 style={{ marginBottom: '12px', color: COLORS.dark, fontSize: '18px' }}>
-                💳 Payment Status
-              </h3>
-              {userRegistration.paymentApprovalStatus === 'pending' && (
-                <>
-                  <p style={{ color: COLORS.warning, fontSize: '16px', fontWeight: '500', marginBottom: '8px' }}>
-                    ⏳ Pending Approval
-                  </p>
-                  <p style={{ color: COLORS.darkGray, fontSize: '14px', margin: 0 }}>
-                    Your payment proof has been submitted and is awaiting organizer verification.
-                  </p>
-                </>
-              )}
-              {userRegistration.paymentApprovalStatus === 'approved' && (
-                <>
-                  <p style={{ color: COLORS.secondary, fontSize: '16px', fontWeight: '500', marginBottom: '8px' }}>
-                    ✅ Payment Approved
-                  </p>
-                  <p style={{ color: COLORS.darkGray, fontSize: '14px', marginBottom: '8px' }}>
-                    Your payment has been verified! Your ticket has been generated.
-                  </p>
-                  {userRegistration.ticketId && (
-                    <div style={{
-                      background: COLORS.white,
-                      padding: '12px',
-                      borderRadius: '6px',
-                      marginTop: '12px'
-                    }}>
-                      <strong>Ticket ID:</strong> {userRegistration.ticketId}
-                    </div>
-                  )}
-                </>
-              )}
-              {userRegistration.paymentApprovalStatus === 'rejected' && (
-                <>
-                  <p style={{ color: COLORS.accent, fontSize: '16px', fontWeight: '500', marginBottom: '8px' }}>
-                    ❌ Payment Rejected
-                  </p>
-                  <p style={{ color: COLORS.darkGray, fontSize: '14px', marginBottom: '8px' }}>
-                    Reason: {userRegistration.paymentRejectionReason || 'No reason provided'}
-                  </p>
-                  <p style={{ color: COLORS.darkGray, fontSize: '14px', margin: 0 }}>
-                    Please contact the organizer for more information.
-                  </p>
-                </>
-              )}
+        {event?.eventType === 'merchandise' &&
+          alreadyRegistered &&
+          userRegistration &&
+          userRegistration.paymentProof && (
+            <div style={{ marginTop: '20px' }}>
+              <div style={{
+                ...STYLES.card,
+                background: userRegistration.paymentApprovalStatus === 'approved'
+                  ? `${COLORS.secondary}15`
+                  : userRegistration.paymentApprovalStatus === 'rejected'
+                    ? `${COLORS.accent}15`
+                    : `${COLORS.warning}15`,
+                border: `2px solid ${userRegistration.paymentApprovalStatus === 'approved'
+                    ? COLORS.secondary
+                    : userRegistration.paymentApprovalStatus === 'rejected'
+                      ? COLORS.accent
+                      : COLORS.warning
+                  }`
+              }}>
+                <h3 style={{ marginBottom: '12px', color: COLORS.dark, fontSize: '18px' }}>
+                  💳 Payment Status
+                </h3>
+                {userRegistration.paymentApprovalStatus === 'pending' && (
+                  <>
+                    <p style={{ color: COLORS.warning, fontSize: '16px', fontWeight: '500', marginBottom: '8px' }}>
+                      ⏳ Pending Approval
+                    </p>
+                    <p style={{ color: COLORS.darkGray, fontSize: '14px', margin: 0 }}>
+                      Your payment proof has been submitted and is awaiting organizer verification.
+                    </p>
+                  </>
+                )}
+                {userRegistration.paymentApprovalStatus === 'approved' && (
+                  <>
+                    <p style={{ color: COLORS.secondary, fontSize: '16px', fontWeight: '500', marginBottom: '8px' }}>
+                      ✅ Payment Approved
+                    </p>
+                    <p style={{ color: COLORS.darkGray, fontSize: '14px', marginBottom: '8px' }}>
+                      Your payment has been verified! Your ticket has been generated.
+                    </p>
+                    {userRegistration.ticketId && (
+                      <div style={{
+                        background: COLORS.white,
+                        padding: '12px',
+                        borderRadius: '6px',
+                        marginTop: '12px'
+                      }}>
+                        <strong>Ticket ID:</strong> {userRegistration.ticketId}
+                      </div>
+                    )}
+                  </>
+                )}
+                {userRegistration.paymentApprovalStatus === 'rejected' && (
+                  <>
+                    <p style={{ color: COLORS.accent, fontSize: '16px', fontWeight: '500', marginBottom: '8px' }}>
+                      ❌ Payment Rejected
+                    </p>
+                    <p style={{ color: COLORS.darkGray, fontSize: '14px', marginBottom: '8px' }}>
+                      Reason: {userRegistration.paymentRejectionReason || 'No reason provided'}
+                    </p>
+                    <p style={{ color: COLORS.darkGray, fontSize: '14px', margin: 0 }}>
+                      Please contact the organizer for more information.
+                    </p>
+                  </>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* Discussion Forum - Always show */}
         <div style={{ marginTop: '30px' }}>
