@@ -563,8 +563,6 @@ const ParticipantDashboard = () => {
               {selectedEvent.eventType === 'merchandise' && (() => {
                 const variantSizes = [...new Set(selectedEvent.merchandiseDetails?.variants?.map(v => v.size).filter(Boolean) || [])];
                 const variantColors = [...new Set(selectedEvent.merchandiseDetails?.variants?.map(v => v.color).filter(Boolean) || [])];
-                const sizes = variantSizes.length > 0 ? variantSizes : ['S', 'M', 'L', 'XL', 'XXL'];
-                const colors = variantColors.length > 0 ? variantColors : ['Black', 'White', 'Navy Blue'];
                 const currentOrder = registrationData.merchandiseOrder || {};
                 const maxQty = selectedEvent.merchandiseDetails?.purchaseLimitPerParticipant || 5;
 
@@ -579,59 +577,87 @@ const ParticipantDashboard = () => {
                     {/* Size Selection */}
                     <div style={{ marginBottom: '16px' }}>
                       <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>Size *</label>
-                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                        {sizes.map(size => (
-                          <button
-                            key={size}
-                            type="button"
-                            onClick={() => setRegistrationData({
-                              ...registrationData,
-                              merchandiseOrder: { ...currentOrder, size }
-                            })}
-                            style={{
-                              padding: '8px 18px',
-                              borderRadius: '8px',
-                              border: currentOrder.size === size ? '2px solid #667eea' : '1px solid #ddd',
-                              background: currentOrder.size === size ? '#667eea15' : 'white',
-                              color: currentOrder.size === size ? '#667eea' : '#333',
-                              fontWeight: currentOrder.size === size ? '700' : '400',
-                              cursor: 'pointer',
-                              fontSize: '14px',
-                            }}
-                          >
-                            {size}
-                          </button>
-                        ))}
-                      </div>
+                      {variantSizes.length > 0 ? (
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                          {variantSizes.map(size => (
+                            <button
+                              key={size}
+                              type="button"
+                              onClick={() => setRegistrationData({
+                                ...registrationData,
+                                merchandiseOrder: { ...currentOrder, size }
+                              })}
+                              style={{
+                                padding: '8px 18px',
+                                borderRadius: '8px',
+                                border: currentOrder.size === size ? '2px solid #667eea' : '1px solid #ddd',
+                                background: currentOrder.size === size ? '#667eea15' : 'white',
+                                color: currentOrder.size === size ? '#667eea' : '#333',
+                                fontWeight: currentOrder.size === size ? '700' : '400',
+                                cursor: 'pointer',
+                                fontSize: '14px',
+                              }}
+                            >
+                              {size}
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <input
+                          type="text"
+                          placeholder="Enter preferred size (e.g. S, M, L, XL)"
+                          value={currentOrder.size || ''}
+                          onChange={(e) => setRegistrationData({
+                            ...registrationData,
+                            merchandiseOrder: { ...currentOrder, size: e.target.value }
+                          })}
+                          required
+                          style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '14px', boxSizing: 'border-box' }}
+                        />
+                      )}
                     </div>
 
                     {/* Color Selection */}
                     <div style={{ marginBottom: '16px' }}>
                       <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>Color *</label>
-                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                        {colors.map(color => (
-                          <button
-                            key={color}
-                            type="button"
-                            onClick={() => setRegistrationData({
-                              ...registrationData,
-                              merchandiseOrder: { ...currentOrder, color }
-                            })}
-                            style={{
-                              padding: '8px 18px',
-                              borderRadius: '8px',
-                              border: currentOrder.color === color ? '2px solid #667eea' : '1px solid #ddd',
-                              background: currentOrder.color === color ? '#667eea15' : 'white',
-                              color: currentOrder.color === color ? '#667eea' : '#333',
-                              fontWeight: currentOrder.color === color ? '700' : '400',
-                              cursor: 'pointer',
-                              fontSize: '14px',
-                            }}
-                          >
-                            {color}
-                          </button>
-                        ))}
-                      </div>
+                      {variantColors.length > 0 ? (
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                          {variantColors.map(color => (
+                            <button
+                              key={color}
+                              type="button"
+                              onClick={() => setRegistrationData({
+                                ...registrationData,
+                                merchandiseOrder: { ...currentOrder, color }
+                              })}
+                              style={{
+                                padding: '8px 18px',
+                                borderRadius: '8px',
+                                border: currentOrder.color === color ? '2px solid #667eea' : '1px solid #ddd',
+                                background: currentOrder.color === color ? '#667eea15' : 'white',
+                                color: currentOrder.color === color ? '#667eea' : '#333',
+                                fontWeight: currentOrder.color === color ? '700' : '400',
+                                cursor: 'pointer',
+                                fontSize: '14px',
+                              }}
+                            >
+                              {color}
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <input
+                          type="text"
+                          placeholder="Enter preferred color (e.g. Black, Blue, Red)"
+                          value={currentOrder.color || ''}
+                          onChange={(e) => setRegistrationData({
+                            ...registrationData,
+                            merchandiseOrder: { ...currentOrder, color: e.target.value }
+                          })}
+                          required
+                          style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '14px', boxSizing: 'border-box' }}
+                        />
+                      )}
                     </div>
 
                     {/* Quantity Selection */}

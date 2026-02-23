@@ -446,34 +446,46 @@ const EventDetail = () => {
                 {/* Size Selection */}
                 {(() => {
                   const variantSizes = [...new Set(event.merchandiseDetails?.variants?.map(v => v.size).filter(Boolean) || [])];
-                  const sizes = variantSizes.length > 0 ? variantSizes : ['S', 'M', 'L', 'XL', 'XXL'];
                   return (
                     <div style={{ marginBottom: '20px' }}>
                       <label style={{ display: 'block', marginBottom: '8px', color: COLORS.dark, fontWeight: '600' }}>
                         Size *
                       </label>
-                      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                        {sizes.map(size => (
-                          <button
-                            key={size}
-                            onClick={() => setMerchandiseOrder({ ...merchandiseOrder, selectedSize: size })}
-                            style={{
-                              padding: '10px 20px',
-                              borderRadius: '8px',
-                              border: merchandiseOrder.selectedSize === size
-                                ? `2px solid ${COLORS.primary}`
-                                : `1px solid ${COLORS.lightGray}`,
-                              background: merchandiseOrder.selectedSize === size ? `${COLORS.primary}15` : COLORS.white,
-                              color: merchandiseOrder.selectedSize === size ? COLORS.primary : COLORS.dark,
-                              fontWeight: merchandiseOrder.selectedSize === size ? '600' : '400',
-                              cursor: 'pointer',
-                              fontSize: '14px',
-                            }}
-                          >
-                            {size}
-                          </button>
-                        ))}
-                      </div>
+                      {variantSizes.length > 0 ? (
+                        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                          {variantSizes.map(size => (
+                            <button
+                              key={size}
+                              onClick={() => setMerchandiseOrder({ ...merchandiseOrder, selectedSize: size })}
+                              style={{
+                                padding: '10px 20px',
+                                borderRadius: '8px',
+                                border: merchandiseOrder.selectedSize === size
+                                  ? `2px solid ${COLORS.primary}`
+                                  : `1px solid ${COLORS.lightGray}`,
+                                background: merchandiseOrder.selectedSize === size ? `${COLORS.primary}15` : COLORS.white,
+                                color: merchandiseOrder.selectedSize === size ? COLORS.primary : COLORS.dark,
+                                fontWeight: merchandiseOrder.selectedSize === size ? '600' : '400',
+                                cursor: 'pointer',
+                                fontSize: '14px',
+                              }}
+                            >
+                              {size}
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <input
+                          type="text"
+                          placeholder="Enter preferred size (e.g. S, M, L, XL)"
+                          value={merchandiseOrder.selectedSize || ''}
+                          onChange={(e) => setMerchandiseOrder({ ...merchandiseOrder, selectedSize: e.target.value })}
+                          style={{
+                            width: '100%', padding: '10px', borderRadius: '8px',
+                            border: `1px solid ${COLORS.lightGray}`, fontSize: '14px', boxSizing: 'border-box'
+                          }}
+                        />
+                      )}
                     </div>
                   );
                 })()}
@@ -481,34 +493,46 @@ const EventDetail = () => {
                 {/* Color Selection */}
                 {(() => {
                   const variantColors = [...new Set(event.merchandiseDetails?.variants?.map(v => v.color).filter(Boolean) || [])];
-                  const colors = variantColors.length > 0 ? variantColors : ['Black', 'White', 'Navy Blue'];
                   return (
                     <div style={{ marginBottom: '20px' }}>
                       <label style={{ display: 'block', marginBottom: '8px', color: COLORS.dark, fontWeight: '600' }}>
                         Color *
                       </label>
-                      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                        {colors.map(color => (
-                          <button
-                            key={color}
-                            onClick={() => setMerchandiseOrder({ ...merchandiseOrder, selectedColor: color })}
-                            style={{
-                              padding: '10px 20px',
-                              borderRadius: '8px',
-                              border: merchandiseOrder.selectedColor === color
-                                ? `2px solid ${COLORS.primary}`
-                                : `1px solid ${COLORS.lightGray}`,
-                              background: merchandiseOrder.selectedColor === color ? `${COLORS.primary}15` : COLORS.white,
-                              color: merchandiseOrder.selectedColor === color ? COLORS.primary : COLORS.dark,
-                              fontWeight: merchandiseOrder.selectedColor === color ? '600' : '400',
-                              cursor: 'pointer',
-                              fontSize: '14px',
-                            }}
-                          >
-                            {color}
-                          </button>
-                        ))}
-                      </div>
+                      {variantColors.length > 0 ? (
+                        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                          {variantColors.map(color => (
+                            <button
+                              key={color}
+                              onClick={() => setMerchandiseOrder({ ...merchandiseOrder, selectedColor: color })}
+                              style={{
+                                padding: '10px 20px',
+                                borderRadius: '8px',
+                                border: merchandiseOrder.selectedColor === color
+                                  ? `2px solid ${COLORS.primary}`
+                                  : `1px solid ${COLORS.lightGray}`,
+                                background: merchandiseOrder.selectedColor === color ? `${COLORS.primary}15` : COLORS.white,
+                                color: merchandiseOrder.selectedColor === color ? COLORS.primary : COLORS.dark,
+                                fontWeight: merchandiseOrder.selectedColor === color ? '600' : '400',
+                                cursor: 'pointer',
+                                fontSize: '14px',
+                              }}
+                            >
+                              {color}
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <input
+                          type="text"
+                          placeholder="Enter preferred color (e.g. Black, Blue, Red)"
+                          value={merchandiseOrder.selectedColor || ''}
+                          onChange={(e) => setMerchandiseOrder({ ...merchandiseOrder, selectedColor: e.target.value })}
+                          style={{
+                            width: '100%', padding: '10px', borderRadius: '8px',
+                            border: `1px solid ${COLORS.lightGray}`, fontSize: '14px', boxSizing: 'border-box'
+                          }}
+                        />
+                      )}
                     </div>
                   );
                 })()}
