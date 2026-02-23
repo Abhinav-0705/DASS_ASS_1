@@ -18,7 +18,7 @@ const PasswordResetRequest = () => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get(
-        '${API_BASE_URL}/api/password-reset/my-requests',
+        `${API_BASE_URL}/api/password-reset/my-requests`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setMyRequests(response.data.requests);
@@ -42,7 +42,7 @@ const PasswordResetRequest = () => {
     try {
       const token = localStorage.getItem('token');
       await axios.post(
-        '${API_BASE_URL}/api/password-reset/request',
+        `${API_BASE_URL}/api/password-reset/request`,
         { reason },
         { headers: { Authorization: `Bearer ${token}` } }
       );

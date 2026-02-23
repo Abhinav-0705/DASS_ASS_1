@@ -47,7 +47,7 @@ const FeedbackForm = ({ eventId, onSuccess }) => {
     try {
       const token = localStorage.getItem('token');
       await axios.post(
-        '${API_BASE_URL}/api/feedback',
+        `${API_BASE_URL}/api/feedback`,
         { eventId, rating, comment },
         { headers: { Authorization: `Bearer ${token}` } }
       );

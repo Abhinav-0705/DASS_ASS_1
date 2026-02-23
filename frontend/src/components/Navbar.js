@@ -20,7 +20,7 @@ const Navbar = () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
-      const res = await axios.get('${API_BASE_URL}/api/notifications', {
+      const res = await axios.get(`${API_BASE_URL}/api/notifications`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNotifications(res.data.notifications || []);
@@ -52,7 +52,7 @@ const Navbar = () => {
   const markAllRead = async () => {
     try {
       const token = localStorage.getItem('token');
-      await axios.patch('${API_BASE_URL}/api/notifications/read-all', {}, {
+      await axios.patch(`${API_BASE_URL}/api/notifications/read-all`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));

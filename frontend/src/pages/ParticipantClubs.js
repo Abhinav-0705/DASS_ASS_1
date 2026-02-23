@@ -20,7 +20,7 @@ const ParticipantClubs = () => {
   const fetchOrganizers = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('${API_BASE_URL}/api/participant/organizers', {
+      const response = await axios.get(`${API_BASE_URL}/api/participant/organizers`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setOrganizers(response.data.organizers);
@@ -34,7 +34,7 @@ const ParticipantClubs = () => {
   const fetchFollowedOrganizers = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('${API_BASE_URL}/api/participant/preferences', {
+      const response = await axios.get(`${API_BASE_URL}/api/participant/preferences`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setFollowedOrganizers(response.data.preferences.followedOrganizers.map(org => org._id || org));

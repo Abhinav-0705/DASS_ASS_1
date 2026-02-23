@@ -48,7 +48,7 @@ const DiscussionForum = ({ eventId }) => {
     try {
       const token = localStorage.getItem('token');
       await axios.post(
-        '${API_BASE_URL}/api/discussions',
+        `${API_BASE_URL}/api/discussions`,
         { eventId, message, replyTo: replyTo?._id },
         { headers: { Authorization: `Bearer ${token}` } }
       );

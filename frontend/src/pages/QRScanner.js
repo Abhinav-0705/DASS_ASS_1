@@ -66,7 +66,7 @@ const QRScanner = () => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.post(
-        '${API_BASE_URL}/api/attendance/scan',
+        `${API_BASE_URL}/api/attendance/scan`,
         { ticketId: scannedTicketId.trim(), scanMethod: 'qr-camera' },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -101,7 +101,7 @@ const QRScanner = () => {
     try {
       const token = localStorage.getItem('token');
       await axios.post(
-        '${API_BASE_URL}/api/attendance/manual',
+        `${API_BASE_URL}/api/attendance/manual`,
         { registrationId, notes: 'Manual check-in by organizer' },
         { headers: { Authorization: `Bearer ${token}` } }
       );
