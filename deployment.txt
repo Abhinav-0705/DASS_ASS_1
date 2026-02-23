@@ -1,0 +1,42 @@
+# Felicity Event Management System - Deployment URLs
+
+## Frontend URL
+[To be deployed on Vercel/Netlify]
+https://your-frontend-url.vercel.app
+
+## Backend API Base URL
+[To be deployed on Render/Railway/Fly/Heroku]
+https://your-backend-url.onrender.com
+
+## Database
+MongoDB Atlas (Connected via environment variable)
+
+## Deployment Instructions
+
+### Frontend Deployment (Vercel/Netlify)
+1. Push code to GitHub repository
+2. Connect repository to Vercel/Netlify
+3. Set build command: `cd frontend && npm run build`
+4. Set publish directory: `frontend/build`
+5. Add environment variables:
+   - REACT_APP_API_URL=<your-backend-url>
+
+### Backend Deployment (Render/Railway)
+1. Push code to GitHub repository
+2. Connect repository to Render/Railway
+3. Set build command: `cd backend && npm install`
+4. Set start command: `cd backend && npm start`
+5. Add environment variables:
+   - MONGO_URI=<your-mongodb-atlas-connection-string>
+   - JWT_SECRET=<your-jwt-secret>
+   - PORT=5001
+   - NODE_ENV=production
+
+### MongoDB Atlas Setup
+1. Create cluster on MongoDB Atlas
+2. Whitelist all IPs (0.0.0.0/0) or specific deployment IPs
+3. Create database user with read/write permissions
+4. Copy connection string and add to backend environment variables
+
+## Test Credentials
+See README.md for test account credentials
