@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 
 const ParticipantDashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [availableEvents, setAvailableEvents] = useState([]);
   const [myRegistrations, setMyRegistrations] = useState([]);
   const [activeTab, setActiveTab] = useState('upcoming');
@@ -81,7 +83,11 @@ const ParticipantDashboard = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      setSuccess('Successfully registered! Check your email for confirmation with ticket details.');
+      if (selectedEvent.eventType === 'merchandise') {
+        setSuccess(`ORDER_PLACED:${selectedEvent._id}:${selectedEvent.eventName}`);
+      } else {
+        setSuccess('Successfully registered! Check your email for confirmation with ticket details.');
+      }
       setShowRegisterModal(false);
       setSelectedEvent(null);
       fetchData();
@@ -224,7 +230,34 @@ const ParticipantDashboard = () => {
           border: '2px solid #4CAF50',
           color: '#2e7d32',
         }}>
-          ✅ {success}
+          {success.startsWith('ORDER_PLACED:') ? (
+            <div>
+              <div style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '8px' }}>
+                ✅ Order placed successfully!
+              </div>
+              <p style={{ margin: '0 0 12px 0' }}>
+                Your merchandise order for <strong>{success.split(':')[2]}</strong> has been placed. 
+                Please upload your payment proof to complete the purchase.
+              </p>
+              <button
+                onClick={() => navigate(`/participant/events/${success.split(':')[1]}`)}
+                style={{
+                  padding: '10px 24px',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  border: 'none',
+                  borderRadius: '20px',
+                  color: 'white',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  fontSize: '14px',
+                }}
+              >
+                📸 Go to Event Details → Upload Payment Proof
+              </button>
+            </div>
+          ) : (
+            <span>✅ {success}</span>
+          )}
         </div>
       )}
 
@@ -377,6 +410,43 @@ const ParticipantDashboard = () => {
                           >
                             🚫 Cancel
                           </button>
+                        )}
+                        {/* Merchandise payment upload prompt */}
+                        {event?.eventType === 'merchandise' && registration.status === 'confirmed' && !registration.paymentProof && (
+                          <button
+                            onClick={() => navigate(`/participant/events/${event._id}`)}
+                            style={{
+                              padding: '8px 16px',
+                              background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
+                              border: 'none',
+                              borderRadius: '20px',
+                              color: 'white',
+                              cursor: 'pointer',
+                              fontWeight: 'bold',
+                              fontSize: '13px',
+                              marginLeft: '8px',
+                            }}
+                          >
+                            📸 Upload Payment
+                          </button>
+                        )}
+                        {/* Show payment status for merchandise */}
+                        {event?.eventType === 'merchandise' && registration.paymentProof && (
+                          <span style={{
+                            padding: '5px 12px',
+                            borderRadius: '20px',
+                            background: registration.paymentApprovalStatus === 'approved' ? '#4CAF50'
+                              : registration.paymentApprovalStatus === 'rejected' ? '#f44336'
+                                : '#ff9800',
+                            color: 'white',
+                            fontSize: '12px',
+                            fontWeight: 'bold',
+                            marginLeft: '8px',
+                          }}>
+                            {registration.paymentApprovalStatus === 'approved' ? '✅ Payment Approved'
+                              : registration.paymentApprovalStatus === 'rejected' ? '❌ Payment Rejected'
+                                : '⏳ Payment Pending'}
+                          </span>
                         )}
                         {registration.status === 'cancelled' && (
                           <span style={{ color: '#999', fontSize: '13px', fontStyle: 'italic' }}>
