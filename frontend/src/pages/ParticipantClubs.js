@@ -37,7 +37,7 @@ const ParticipantClubs = () => {
       const response = await axios.get(`${API_BASE_URL}/api/participant/preferences`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setFollowedOrganizers(response.data.preferences.followedOrganizers.map(org => org._id || org));
+      setFollowedOrganizers((response.data.preferences?.followedOrganizers || []).map(org => org._id || org));
     } catch (err) {
       console.error('Error fetching followed organizers:', err);
     }
@@ -187,7 +187,7 @@ const ParticipantClubs = () => {
                 >
                   View Details
                 </button>
-                
+
                 {isFollowing(organizer._id) ? (
                   <button
                     onClick={() => handleUnfollow(organizer._id)}
