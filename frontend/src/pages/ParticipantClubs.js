@@ -23,7 +23,7 @@ const ParticipantClubs = () => {
       const response = await axios.get(`${API_BASE_URL}/api/participant/organizers`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setOrganizers(response.data.organizers);
+      setOrganizers(response.data.organizers || []);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to fetch organizers');
     } finally {
@@ -37,7 +37,8 @@ const ParticipantClubs = () => {
       const response = await axios.get(`${API_BASE_URL}/api/participant/preferences`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setFollowedOrganizers((response.data.preferences?.followedOrganizers || []).map(org => org._id || org));
+      const prefs = response.data?.preferences?.followedOrganizers || [];
+      setFollowedOrganizers(prefs.map(org => org._id || org));
     } catch (err) {
       console.error('Error fetching followed organizers:', err);
     }
