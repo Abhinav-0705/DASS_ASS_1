@@ -313,9 +313,24 @@ const checkInParticipant = async (req, res) => {
       return res.status(400).json({ message: 'Only confirmed registrations can be checked in' });
     }
 
+    if (registration.checkedIn) {
+      return res.status(400).json({ message: 'Participant is already checked in' });
+    }
+
     registration.checkedIn = true;
     registration.checkInTime = new Date();
     await registration.save();
+
+    // Create an Attendance record as well so it shows in the QR scanner dashboard
+    const Attendance = require('../models/Attendance');
+    await Attendance.create({
+      registrationId: registration._id,
+      eventId: registration.eventId._id,
+      participantId: registration.participantId._id,
+      scannedBy: req.user._id,
+      scanMethod: 'manual',
+      notes: 'Marked present from Organizer Event Dashboard'
+    });
 
     res.status(200).json({
       success: true,

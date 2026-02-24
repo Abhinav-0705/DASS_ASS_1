@@ -60,7 +60,7 @@ const EventDetailOrganizer = () => {
 
   const handleMarkAttendance = async (registrationId) => {
     try {
-      await api.put(`/registrations/${registrationId}/check-in`);
+      await api.patch(`/registrations/${registrationId}/checkin`);
       setSuccess('Attendance marked successfully');
       fetchRegistrations();
     } catch (err) {
@@ -100,7 +100,7 @@ const EventDetailOrganizer = () => {
     confirmedRegistrations: registrations.filter(r => r.status === 'confirmed').length,
     cancelledRegistrations: registrations.filter(r => r.status === 'cancelled').length,
     attendance: registrations.filter(r => r.checkedIn).length,
-    attendanceRate: registrations.length > 0 
+    attendanceRate: registrations.length > 0
       ? ((registrations.filter(r => r.checkedIn).length / registrations.filter(r => r.status === 'confirmed').length) * 100).toFixed(1)
       : 0,
     revenue: registrations
@@ -110,11 +110,11 @@ const EventDetailOrganizer = () => {
 
   // Filter registrations
   const filteredRegistrations = registrations.filter(reg => {
-    const matchesSearch = 
+    const matchesSearch =
       (reg.participantId?.firstName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
       (reg.participantId?.lastName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
       (reg.participantId?.email?.toLowerCase() || '').includes(searchTerm.toLowerCase());
-    
+
     const matchesStatus = filterStatus === 'all' || reg.status === filterStatus;
     const matchesPayment = filterPayment === 'all' || reg.paymentStatus === filterPayment;
 
@@ -123,10 +123,10 @@ const EventDetailOrganizer = () => {
 
   if (loading) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
         minHeight: '80vh',
         color: COLORS.darkGray
       }}>
@@ -137,7 +137,7 @@ const EventDetailOrganizer = () => {
 
   if (!event) {
     return (
-      <div style={{ 
+      <div style={{
         minHeight: '100vh',
         background: COLORS.background,
         padding: '24px'
@@ -160,7 +160,7 @@ const EventDetailOrganizer = () => {
   }
 
   return (
-    <div style={{ 
+    <div style={{
       minHeight: '100vh',
       background: COLORS.background,
       padding: '24px'
@@ -178,7 +178,7 @@ const EventDetailOrganizer = () => {
           >
             ← Back to Dashboard
           </button>
-          
+
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
             <button
               onClick={() => navigate(`/organizer/event/${eventId}/qr-scanner`)}
@@ -214,7 +214,7 @@ const EventDetailOrganizer = () => {
 
         {/* Alert Messages */}
         {error && (
-          <div style={{ 
+          <div style={{
             background: '#fef2f2',
             color: COLORS.accent,
             padding: '12px 16px',
@@ -243,7 +243,7 @@ const EventDetailOrganizer = () => {
           </div>
         )}
         {success && (
-          <div style={{ 
+          <div style={{
             background: '#f0fdf4',
             color: COLORS.secondary,
             padding: '12px 16px',
@@ -279,9 +279,9 @@ const EventDetailOrganizer = () => {
             </div>
           </div>
 
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
             gap: '16px',
             marginBottom: '20px'
           }}>
@@ -343,13 +343,13 @@ const EventDetailOrganizer = () => {
         </div>
 
         {/* Analytics Cards */}
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', 
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
           gap: '16px',
           marginBottom: '24px'
         }}>
-          <div style={{ 
+          <div style={{
             ...STYLES.card,
             background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.primaryDark})`,
             color: COLORS.white
@@ -358,7 +358,7 @@ const EventDetailOrganizer = () => {
             <div style={{ fontSize: '32px', fontWeight: 'bold' }}>{analytics.totalRegistrations}</div>
           </div>
 
-          <div style={{ 
+          <div style={{
             ...STYLES.card,
             background: `linear-gradient(135deg, ${COLORS.secondary}, ${COLORS.secondaryDark})`,
             color: COLORS.white
@@ -367,7 +367,7 @@ const EventDetailOrganizer = () => {
             <div style={{ fontSize: '32px', fontWeight: 'bold' }}>{analytics.confirmedRegistrations}</div>
           </div>
 
-          <div style={{ 
+          <div style={{
             ...STYLES.card,
             background: `linear-gradient(135deg, ${COLORS.info}, ${COLORS.primary})`,
             color: COLORS.white
@@ -378,7 +378,7 @@ const EventDetailOrganizer = () => {
           </div>
 
           {event.eventType === 'normal' && (
-            <div style={{ 
+            <div style={{
               ...STYLES.card,
               background: `linear-gradient(135deg, ${COLORS.warning}, ${COLORS.merchandise})`,
               color: COLORS.white
@@ -388,7 +388,7 @@ const EventDetailOrganizer = () => {
             </div>
           )}
 
-          <div style={{ 
+          <div style={{
             ...STYLES.card,
             background: `linear-gradient(135deg, ${COLORS.accent}, ${COLORS.accentDark})`,
             color: COLORS.white
@@ -419,9 +419,9 @@ const EventDetailOrganizer = () => {
           </div>
 
           {/* Filters */}
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
             gap: '12px',
             marginBottom: '20px'
           }}>
