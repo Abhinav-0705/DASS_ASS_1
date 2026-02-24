@@ -587,7 +587,7 @@ const EventDetail = () => {
           {/* Registration Status / Button */}
           {alreadyRegistered ? (
             <div style={{ marginTop: '20px' }}>
-              {userRegistration?.ticketId ? (
+              {userRegistration?.ticketId && (event.eventType !== 'merchandise' || userRegistration.paymentApprovalStatus === 'approved') ? (
                 <TicketQRCode
                   ticketId={userRegistration.ticketId}
                   eventName={event.eventName}
@@ -601,10 +601,12 @@ const EventDetail = () => {
                   textAlign: 'center'
                 }}>
                   <h3 style={{ color: COLORS.secondary, margin: '0 0 12px 0', fontSize: '20px' }}>
-                    ✅ You're Registered!
+                    {event.eventType === 'merchandise' ? '🛒 Order Placed!' : '✅ You\'re Registered!'}
                   </h3>
                   <p style={{ color: COLORS.darkGray, margin: 0 }}>
-                    Your ticket will be generated once your registration is approved.
+                    {event.eventType === 'merchandise'
+                      ? 'Please upload payment proof. Your ticket and QR code will be generated once the organizer approves your payment.'
+                      : 'Your ticket will be generated once your registration is approved.'}
                   </p>
                 </div>
               )}

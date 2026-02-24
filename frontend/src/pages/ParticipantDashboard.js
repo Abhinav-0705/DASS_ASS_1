@@ -376,7 +376,9 @@ const ParticipantDashboard = () => {
                           fontFamily: 'monospace',
                           fontSize: '13px'
                         }}>
-                          {registration.ticketId || 'N/A'}
+                          {registration.ticketId && (event?.eventType !== 'merchandise' || registration.paymentApprovalStatus === 'approved')
+                            ? registration.ticketId
+                            : 'N/A'}
                         </span>
                       </td>
                       <td style={{ padding: '15px' }}>
