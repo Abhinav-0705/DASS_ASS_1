@@ -46,20 +46,23 @@ const PaymentProofUpload = ({ registrationId, onSuccess }) => {
     setError('');
 
     try {
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64String = reader.result;
+      // Convert file to base64
+      const base64String = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error('Failed to read file'));
+        reader.readAsDataURL(selectedFile);
+      });
 
-        const token = localStorage.getItem('token');
-        await axios.post(
-          `${API_BASE_URL}/api/registrations/${registrationId}/upload-payment-proof`,
-          { paymentProof: base64String },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+      const token = localStorage.getItem('token');
+      await axios.post(
+        `${API_BASE_URL}/api/registrations/${registrationId}/upload-payment-proof`,
+        { paymentProof: base64String },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-        if (onSuccess) onSuccess();
-      };
-      reader.readAsDataURL(selectedFile);
+      setLoading(false);
+      if (onSuccess) onSuccess();
     } catch (error) {
       setError(error.response?.data?.message || 'Failed to upload payment proof');
       setLoading(false);

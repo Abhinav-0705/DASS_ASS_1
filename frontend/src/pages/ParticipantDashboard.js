@@ -236,11 +236,11 @@ const ParticipantDashboard = () => {
                 ✅ Order placed successfully!
               </div>
               <p style={{ margin: '0 0 12px 0' }}>
-                Your merchandise order for <strong>{success.split(':')[2]}</strong> has been placed. 
+                Your merchandise order for <strong>{success.split(':')[2]}</strong> has been placed.
                 Please upload your payment proof to complete the purchase.
               </p>
               <button
-                onClick={() => navigate(`/participant/events/${success.split(':')[1]}`)}
+                onClick={() => navigate(`/participant/event/${success.split(':')[1]}`)}
                 style={{
                   padding: '10px 24px',
                   background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -410,43 +410,6 @@ const ParticipantDashboard = () => {
                           >
                             🚫 Cancel
                           </button>
-                        )}
-                        {/* Merchandise payment upload prompt */}
-                        {event?.eventType === 'merchandise' && registration.status === 'confirmed' && !registration.paymentProof && (
-                          <button
-                            onClick={() => navigate(`/participant/events/${event._id}`)}
-                            style={{
-                              padding: '8px 16px',
-                              background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
-                              border: 'none',
-                              borderRadius: '20px',
-                              color: 'white',
-                              cursor: 'pointer',
-                              fontWeight: 'bold',
-                              fontSize: '13px',
-                              marginLeft: '8px',
-                            }}
-                          >
-                            📸 Upload Payment
-                          </button>
-                        )}
-                        {/* Show payment status for merchandise */}
-                        {event?.eventType === 'merchandise' && registration.paymentProof && (
-                          <span style={{
-                            padding: '5px 12px',
-                            borderRadius: '20px',
-                            background: registration.paymentApprovalStatus === 'approved' ? '#4CAF50'
-                              : registration.paymentApprovalStatus === 'rejected' ? '#f44336'
-                                : '#ff9800',
-                            color: 'white',
-                            fontSize: '12px',
-                            fontWeight: 'bold',
-                            marginLeft: '8px',
-                          }}>
-                            {registration.paymentApprovalStatus === 'approved' ? '✅ Payment Approved'
-                              : registration.paymentApprovalStatus === 'rejected' ? '❌ Payment Rejected'
-                                : '⏳ Payment Pending'}
-                          </span>
                         )}
                         {registration.status === 'cancelled' && (
                           <span style={{ color: '#999', fontSize: '13px', fontStyle: 'italic' }}>
@@ -633,6 +596,8 @@ const ParticipantDashboard = () => {
               {selectedEvent.eventType === 'merchandise' && (() => {
                 const variantSizes = [...new Set(selectedEvent.merchandiseDetails?.variants?.map(v => v.size).filter(Boolean) || [])];
                 const variantColors = [...new Set(selectedEvent.merchandiseDetails?.variants?.map(v => v.color).filter(Boolean) || [])];
+                const sizes = variantSizes.length > 0 ? variantSizes : ['S', 'M', 'L', 'XL', 'XXL'];
+                const colors = variantColors.length > 0 ? variantColors : ['Black', 'White', 'Navy Blue'];
                 const currentOrder = registrationData.merchandiseOrder || {};
                 const maxQty = selectedEvent.merchandiseDetails?.purchaseLimitPerParticipant || 5;
 
@@ -647,87 +612,59 @@ const ParticipantDashboard = () => {
                     {/* Size Selection */}
                     <div style={{ marginBottom: '16px' }}>
                       <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>Size *</label>
-                      {variantSizes.length > 0 ? (
-                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                          {variantSizes.map(size => (
-                            <button
-                              key={size}
-                              type="button"
-                              onClick={() => setRegistrationData({
-                                ...registrationData,
-                                merchandiseOrder: { ...currentOrder, size }
-                              })}
-                              style={{
-                                padding: '8px 18px',
-                                borderRadius: '8px',
-                                border: currentOrder.size === size ? '2px solid #667eea' : '1px solid #ddd',
-                                background: currentOrder.size === size ? '#667eea15' : 'white',
-                                color: currentOrder.size === size ? '#667eea' : '#333',
-                                fontWeight: currentOrder.size === size ? '700' : '400',
-                                cursor: 'pointer',
-                                fontSize: '14px',
-                              }}
-                            >
-                              {size}
-                            </button>
-                          ))}
-                        </div>
-                      ) : (
-                        <input
-                          type="text"
-                          placeholder="Enter preferred size (e.g. S, M, L, XL)"
-                          value={currentOrder.size || ''}
-                          onChange={(e) => setRegistrationData({
-                            ...registrationData,
-                            merchandiseOrder: { ...currentOrder, size: e.target.value }
-                          })}
-                          required
-                          style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '14px', boxSizing: 'border-box' }}
-                        />
-                      )}
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        {sizes.map(size => (
+                          <button
+                            key={size}
+                            type="button"
+                            onClick={() => setRegistrationData({
+                              ...registrationData,
+                              merchandiseOrder: { ...currentOrder, size }
+                            })}
+                            style={{
+                              padding: '8px 18px',
+                              borderRadius: '8px',
+                              border: currentOrder.size === size ? '2px solid #667eea' : '1px solid #ddd',
+                              background: currentOrder.size === size ? '#667eea15' : 'white',
+                              color: currentOrder.size === size ? '#667eea' : '#333',
+                              fontWeight: currentOrder.size === size ? '700' : '400',
+                              cursor: 'pointer',
+                              fontSize: '14px',
+                            }}
+                          >
+                            {size}
+                          </button>
+                        ))}
+                      </div>
                     </div>
 
                     {/* Color Selection */}
                     <div style={{ marginBottom: '16px' }}>
                       <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>Color *</label>
-                      {variantColors.length > 0 ? (
-                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                          {variantColors.map(color => (
-                            <button
-                              key={color}
-                              type="button"
-                              onClick={() => setRegistrationData({
-                                ...registrationData,
-                                merchandiseOrder: { ...currentOrder, color }
-                              })}
-                              style={{
-                                padding: '8px 18px',
-                                borderRadius: '8px',
-                                border: currentOrder.color === color ? '2px solid #667eea' : '1px solid #ddd',
-                                background: currentOrder.color === color ? '#667eea15' : 'white',
-                                color: currentOrder.color === color ? '#667eea' : '#333',
-                                fontWeight: currentOrder.color === color ? '700' : '400',
-                                cursor: 'pointer',
-                                fontSize: '14px',
-                              }}
-                            >
-                              {color}
-                            </button>
-                          ))}
-                        </div>
-                      ) : (
-                        <input
-                          type="text"
-                          placeholder="Enter preferred color (e.g. Black, Blue, Red)"
-                          value={currentOrder.color || ''}
-                          onChange={(e) => setRegistrationData({
-                            ...registrationData,
-                            merchandiseOrder: { ...currentOrder, color: e.target.value }
-                          })}
-                          required
-                          style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '14px', boxSizing: 'border-box' }}
-                        />
-                      )}
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        {colors.map(color => (
+                          <button
+                            key={color}
+                            type="button"
+                            onClick={() => setRegistrationData({
+                              ...registrationData,
+                              merchandiseOrder: { ...currentOrder, color }
+                            })}
+                            style={{
+                              padding: '8px 18px',
+                              borderRadius: '8px',
+                              border: currentOrder.color === color ? '2px solid #667eea' : '1px solid #ddd',
+                              background: currentOrder.color === color ? '#667eea15' : 'white',
+                              color: currentOrder.color === color ? '#667eea' : '#333',
+                              fontWeight: currentOrder.color === color ? '700' : '400',
+                              cursor: 'pointer',
+                              fontSize: '14px',
+                            }}
+                          >
+                            {color}
+                          </button>
+                        ))}
+                      </div>
                     </div>
 
                     {/* Quantity Selection */}

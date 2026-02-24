@@ -60,28 +60,33 @@ const registerForEvent = async (req, res) => {
       }
 
       // Find the variant
-      const variant = event.merchandiseDetails.variants.find(
+      const variant = event.merchandiseDetails?.variants?.find(
         v => v.size === merchandiseOrder.size && v.color === merchandiseOrder.color
       );
 
-      if (!variant) {
-        return res.status(400).json({ message: 'Selected variant not available' });
+      if (variant) {
+        // Variant exists - check stock
+        if (variant.stockQuantity < (merchandiseOrder.quantity || 1)) {
+          return res.status(400).json({
+            message: `Insufficient stock. Only ${variant.stockQuantity} items available.`
+          });
+        }
+        merchandiseOrder.totalPrice = variant.price * (merchandiseOrder.quantity || 1);
+      } else {
+        // No exact variant match - accept custom size/color with event's base fee
+        merchandiseOrder.totalPrice = event.registrationFee * (merchandiseOrder.quantity || 1);
       }
 
-      if (variant.stockQuantity < merchandiseOrder.quantity) {
-        return res.status(400).json({ 
-          message: `Insufficient stock. Only ${variant.stockQuantity} items available.` 
-        });
-      }
+      // Ensure quantity is set
+      if (!merchandiseOrder.quantity) merchandiseOrder.quantity = 1;
 
       // Check purchase limit
-      if (merchandiseOrder.quantity > event.merchandiseDetails.purchaseLimitPerParticipant) {
-        return res.status(400).json({ 
-          message: `Purchase limit is ${event.merchandiseDetails.purchaseLimitPerParticipant} per participant` 
+      if (event.merchandiseDetails?.purchaseLimitPerParticipant &&
+        merchandiseOrder.quantity > event.merchandiseDetails.purchaseLimitPerParticipant) {
+        return res.status(400).json({
+          message: `Purchase limit is ${event.merchandiseDetails.purchaseLimitPerParticipant} per participant`
         });
       }
-
-      merchandiseOrder.totalPrice = variant.price * merchandiseOrder.quantity;
     }
 
     // Generate unique ticket ID
@@ -94,11 +99,11 @@ const registerForEvent = async (req, res) => {
       ticketId,
       formResponses: formResponses || {},
       merchandiseOrder: merchandiseOrder || null,
-      paymentAmount: event.eventType === 'merchandise' 
-        ? merchandiseOrder.totalPrice 
+      paymentAmount: event.eventType === 'merchandise'
+        ? merchandiseOrder.totalPrice
         : event.registrationFee,
-      paymentStatus: event.registrationFee === 0 && event.eventType !== 'merchandise' 
-        ? 'completed' 
+      paymentStatus: event.registrationFee === 0 && event.eventType !== 'merchandise'
+        ? 'completed'
         : 'pending',
       status: 'confirmed',
     });
@@ -149,7 +154,7 @@ const getMyRegistrations = async (req, res) => {
 
     const { status } = req.query;
     const query = { participantId: req.user._id };
-    
+
     if (status) {
       query.status = status;
     }
@@ -197,7 +202,7 @@ const getEventRegistrations = async (req, res) => {
 
     const { status, paymentStatus } = req.query;
     const query = { eventId: req.params.eventId };
-    
+
     if (status) query.status = status;
     if (paymentStatus) query.paymentStatus = paymentStatus;
 
@@ -238,7 +243,7 @@ const cancelRegistration = async (req, res) => {
     }
 
     const event = await Event.findById(registration.eventId);
-    
+
     // Check if cancellation is allowed (e.g., before event starts)
     if (new Date() > event.eventStartDate) {
       return res.status(400).json({ message: 'Cannot cancel registration after event has started' });
@@ -255,11 +260,11 @@ const cancelRegistration = async (req, res) => {
     // For merchandise, restore stock
     if (event.eventType === 'merchandise' && registration.merchandiseOrder) {
       const variantIndex = event.merchandiseDetails.variants.findIndex(
-        v => v.size === registration.merchandiseOrder.size && 
-             v.color === registration.merchandiseOrder.color
+        v => v.size === registration.merchandiseOrder.size &&
+          v.color === registration.merchandiseOrder.color
       );
       if (variantIndex !== -1) {
-        event.merchandiseDetails.variants[variantIndex].stockQuantity += 
+        event.merchandiseDetails.variants[variantIndex].stockQuantity +=
           registration.merchandiseOrder.quantity;
       }
     }
