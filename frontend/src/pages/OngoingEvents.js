@@ -3,7 +3,10 @@ import { Link } from 'react-router-dom';
 import api from '../services/api';
 import { COLORS, STYLES, getStatusBadge } from '../constants/theme';
 
+import { useAuth } from '../context/AuthContext';
+
 const OngoingEvents = () => {
+  const { user } = useAuth();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -15,9 +18,19 @@ const OngoingEvents = () => {
   const fetchOngoingEvents = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/events/my-events');
+      const token = localStorage.getItem('token');
+      const response = await api.get(`/events/organizer/${user.id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      const now = new Date();
       const ongoing = response.data.events.filter(
-        event => event.status === 'ongoing' || event.status === 'published'
+        event => {
+          const start = new Date(event.eventStartDate);
+          const end = new Date(event.eventEndDate);
+          // Only show published events that are currently happening
+          return start <= now && end >= now && event.status === 'published';
+        }
       );
       setEvents(ongoing);
       setLoading(false);
@@ -29,10 +42,10 @@ const OngoingEvents = () => {
 
   if (loading) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
         minHeight: '80vh',
         color: COLORS.darkGray
       }}>
@@ -42,7 +55,7 @@ const OngoingEvents = () => {
   }
 
   return (
-    <div style={{ 
+    <div style={{
       minHeight: '100vh',
       background: COLORS.background,
       padding: '24px'
@@ -62,7 +75,7 @@ const OngoingEvents = () => {
         </div>
 
         {error && (
-          <div style={{ 
+          <div style={{
             background: '#fef2f2',
             color: COLORS.accent,
             padding: '12px 16px',
@@ -76,9 +89,9 @@ const OngoingEvents = () => {
 
         {/* Events Grid */}
         {events.length > 0 ? (
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', 
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
             gap: '20px'
           }}>
             {events.map((event) => (
@@ -93,14 +106,14 @@ const OngoingEvents = () => {
                   cursor: 'pointer',
                   height: '100%',
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.boxShadow = STYLES.cardHover.boxShadow;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = STYLES.card.boxShadow;
-                }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-4px)';
+                    e.currentTarget.style.boxShadow = STYLES.cardHover.boxShadow;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = STYLES.card.boxShadow;
+                  }}
                 >
                   <div style={{ marginBottom: '16px' }}>
                     <h3 style={{ margin: '0 0 8px 0', color: COLORS.dark, fontSize: '18px' }}>
@@ -154,8 +167,8 @@ const OngoingEvents = () => {
                     <div style={{
                       width: `${(event.currentRegistrations / event.registrationLimit) * 100}%`,
                       height: '100%',
-                      background: event.currentRegistrations >= event.registrationLimit * 0.8 
-                        ? COLORS.accent 
+                      background: event.currentRegistrations >= event.registrationLimit * 0.8
+                        ? COLORS.accent
                         : COLORS.secondary,
                       transition: 'width 0.3s',
                     }} />

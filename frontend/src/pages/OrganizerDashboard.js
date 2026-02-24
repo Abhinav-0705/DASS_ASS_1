@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import { COLORS, STYLES, getStatusBadge } from '../constants/theme';
 
 const OrganizerDashboard = () => {
   const { user } = useAuth();
+  const location = useLocation();
   const [events, setEvents] = useState([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -13,7 +14,7 @@ const OrganizerDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  
+
   const [newEvent, setNewEvent] = useState({
     eventName: '',
     eventDescription: '',
@@ -54,6 +55,12 @@ const OrganizerDashboard = () => {
     fetchMyEvents();
   }, []);
 
+  useEffect(() => {
+    if (location.pathname === '/organizer/create-event') {
+      setShowCreateModal(true);
+    }
+  }, [location.pathname]);
+
   const fetchMyEvents = async () => {
     try {
       setLoading(true);
@@ -76,7 +83,7 @@ const OrganizerDashboard = () => {
 
     try {
       const token = localStorage.getItem('token');
-      
+
       const eventData = {
         ...newEvent,
         eventTags: newEvent.eventTags.split(',').map(tag => tag.trim()).filter(tag => tag),
@@ -108,10 +115,10 @@ const OrganizerDashboard = () => {
 
     try {
       const token = localStorage.getItem('token');
-      
+
       // Check what can be edited based on status
       let updateData = {};
-      
+
       if (editingEvent.status === 'draft') {
         // Draft: Can edit everything
         updateData = {
@@ -277,10 +284,10 @@ const OrganizerDashboard = () => {
 
   if (loading) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
         minHeight: '80vh',
         color: COLORS.darkGray
       }}>
@@ -301,13 +308,13 @@ const OrganizerDashboard = () => {
     totalCompleted: completedEvents.length,
     totalRegistrations: completedEvents.reduce((sum, e) => sum + (e.currentRegistrations || 0), 0),
     totalRevenue: completedEvents.reduce((sum, e) => sum + ((e.currentRegistrations || 0) * (e.registrationFee || 0)), 0),
-    avgAttendance: completedEvents.length > 0 
+    avgAttendance: completedEvents.length > 0
       ? (completedEvents.reduce((sum, e) => sum + (e.attendance || 0), 0) / completedEvents.length).toFixed(1)
       : 0
   };
 
   return (
-    <div style={{ 
+    <div style={{
       minHeight: '100vh',
       background: COLORS.background,
       padding: '24px'
@@ -340,7 +347,7 @@ const OrganizerDashboard = () => {
 
         {/* Alert Messages */}
         {error && (
-          <div style={{ 
+          <div style={{
             background: '#fef2f2',
             color: COLORS.accent,
             padding: '12px 16px',
@@ -352,7 +359,7 @@ const OrganizerDashboard = () => {
           </div>
         )}
         {success && (
-          <div style={{ 
+          <div style={{
             background: '#f0fdf4',
             color: COLORS.secondary,
             padding: '12px 16px',
@@ -365,13 +372,13 @@ const OrganizerDashboard = () => {
         )}
 
         {/* Statistics Cards */}
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
           gap: '16px',
           marginBottom: '24px'
         }}>
-          <div style={{ 
+          <div style={{
             ...STYLES.card,
             background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.primaryDark})`,
             color: COLORS.white
@@ -380,7 +387,7 @@ const OrganizerDashboard = () => {
             <div style={{ fontSize: '36px', fontWeight: 'bold' }}>{events.length}</div>
           </div>
 
-          <div style={{ 
+          <div style={{
             ...STYLES.card,
             background: `linear-gradient(135deg, ${COLORS.draft}, ${COLORS.warning})`,
             color: COLORS.white
@@ -389,7 +396,7 @@ const OrganizerDashboard = () => {
             <div style={{ fontSize: '36px', fontWeight: 'bold' }}>{draftEvents}</div>
           </div>
 
-          <div style={{ 
+          <div style={{
             ...STYLES.card,
             background: `linear-gradient(135deg, ${COLORS.secondary}, ${COLORS.secondaryDark})`,
             color: COLORS.white
@@ -398,7 +405,7 @@ const OrganizerDashboard = () => {
             <div style={{ fontSize: '36px', fontWeight: 'bold' }}>{publishedEvents}</div>
           </div>
 
-          <div style={{ 
+          <div style={{
             ...STYLES.card,
             background: `linear-gradient(135deg, ${COLORS.info}, ${COLORS.primary})`,
             color: COLORS.white
@@ -407,7 +414,7 @@ const OrganizerDashboard = () => {
             <div style={{ fontSize: '36px', fontWeight: 'bold' }}>{ongoingEvents}</div>
           </div>
 
-          <div style={{ 
+          <div style={{
             ...STYLES.card,
             background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.primaryLight})`,
             color: COLORS.white
@@ -423,9 +430,9 @@ const OrganizerDashboard = () => {
             <h3 style={{ margin: '0 0 16px 0', color: COLORS.dark, fontSize: '20px' }}>
               Completed Events Analytics
             </h3>
-            <div style={{ 
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
               gap: '16px'
             }}>
               <div>
@@ -483,7 +490,7 @@ const OrganizerDashboard = () => {
                   {events.map((event) => (
                     <tr key={event._id} style={{ borderBottom: `1px solid ${COLORS.veryLightGray}` }}>
                       <td style={{ padding: '12px' }}>
-                        <Link 
+                        <Link
                           to={`/organizer/event/${event._id}`}
                           style={{ color: COLORS.primary, textDecoration: 'none', fontWeight: '500' }}
                         >
@@ -506,7 +513,7 @@ const OrganizerDashboard = () => {
                         <span style={getStatusBadge(event.status)}>{event.status}</span>
                       </td>
                       <td style={{ padding: '12px', color: COLORS.darkGray }}>
-                        <span style={{ 
+                        <span style={{
                           color: event.currentRegistrations >= event.registrationLimit * 0.8 ? COLORS.accent : COLORS.secondary,
                           fontWeight: '500'
                         }}>
@@ -523,7 +530,7 @@ const OrganizerDashboard = () => {
                       <td style={{ padding: '12px' }}>
                         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                           {/* View Details Button - Always visible */}
-                          <Link 
+                          <Link
                             to={`/organizer/event/${event._id}`}
                             style={{ textDecoration: 'none' }}
                           >
@@ -880,8 +887,8 @@ const OrganizerDashboard = () => {
                       />
                       {' '}Required Field
                     </label>
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       onClick={addFormField}
                       style={{
                         ...STYLES.button,
@@ -933,7 +940,7 @@ const OrganizerDashboard = () => {
                     required
                     style={{ ...STYLES.input, marginBottom: '12px' }}
                   />
-                  
+
                   <div style={{ border: `1px solid ${COLORS.veryLightGray}`, padding: '12px', borderRadius: '4px' }}>
                     <strong style={{ display: 'block', marginBottom: '8px', color: COLORS.dark }}>Add Variants</strong>
                     <select
@@ -971,8 +978,8 @@ const OrganizerDashboard = () => {
                       min="0"
                       style={{ ...STYLES.input, marginBottom: '8px' }}
                     />
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       onClick={addVariant}
                       style={{
                         ...STYLES.button,
@@ -1014,7 +1021,7 @@ const OrganizerDashboard = () => {
                 >
                   Cancel
                 </button>
-                <button 
+                <button
                   type="submit"
                   style={{
                     ...STYLES.button,
@@ -1059,7 +1066,7 @@ const OrganizerDashboard = () => {
             <h3 style={{ margin: '0 0 16px 0', color: COLORS.dark, fontSize: '24px' }}>
               Edit Event
             </h3>
-            
+
             {editingEvent.status === 'published' && (
               <div style={{
                 background: '#fffbeb',
@@ -1275,7 +1282,7 @@ const OrganizerDashboard = () => {
                   Cancel
                 </button>
                 {editingEvent.status !== 'ongoing' && editingEvent.status !== 'completed' && (
-                  <button 
+                  <button
                     type="submit"
                     style={{
                       ...STYLES.button,

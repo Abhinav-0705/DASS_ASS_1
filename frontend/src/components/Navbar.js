@@ -413,6 +413,7 @@ const Navbar = () => {
 
           <div style={navbarStyles.navLinks}>
             <NavLink to="/organizer/dashboard">Dashboard</NavLink>
+            <NavLink to="/organizer/create-event">Create Event</NavLink>
             <NavLink to="/organizer/ongoing-events">Ongoing Events</NavLink>
             <NavLink to="/organizer/profile">Profile</NavLink>
           </div>
@@ -443,6 +444,8 @@ const Navbar = () => {
 
           <div style={navbarStyles.navLinks}>
             <NavLink to="/admin/dashboard">Dashboard</NavLink>
+            <NavLink to="/admin/dashboard">Manage Clubs/Organizers</NavLink>
+            <NavLink to="/admin/password-resets">Password Reset Requests</NavLink>
           </div>
 
           <div style={navbarStyles.rightSection}>
