@@ -89,8 +89,8 @@ const registerForEvent = async (req, res) => {
       }
     }
 
-    // Generate unique ticket ID
-    const ticketId = generateTicketId();
+    // Generate unique ticket ID (only for non-merchandise events)
+    const ticketId = event.eventType !== 'merchandise' ? generateTicketId() : null;
 
     // Create registration
     const registration = await Registration.create({
@@ -105,18 +105,20 @@ const registerForEvent = async (req, res) => {
       paymentStatus: event.registrationFee === 0 && event.eventType !== 'merchandise'
         ? 'completed'
         : 'pending',
-      status: 'confirmed',
+      // Merchandise starts as 'pending' (awaiting payment proof), normal events as 'confirmed'
+      status: event.eventType === 'merchandise' ? 'pending' : 'confirmed',
+      paymentApprovalStatus: event.eventType === 'merchandise' ? 'pending' : undefined,
     });
 
     // Update event registration count
     event.currentRegistrations += 1;
 
-    // For merchandise, update stock
+    // For non-merchandise events, update stock immediately
+    // For merchandise, stock is decremented only after payment approval
     if (event.eventType === 'merchandise') {
-      const variantIndex = event.merchandiseDetails.variants.findIndex(
-        v => v.size === merchandiseOrder.size && v.color === merchandiseOrder.color
-      );
-      event.merchandiseDetails.variants[variantIndex].stockQuantity -= merchandiseOrder.quantity;
+      // Don't decrement stock yet - will happen on approval
+    } else {
+      await event.save();
     }
 
     await event.save();
@@ -125,16 +127,21 @@ const registerForEvent = async (req, res) => {
       .populate('eventId', 'eventName eventType eventStartDate venue registrationFee merchandiseDetails')
       .populate('participantId', 'firstName lastName email');
 
-    // Send confirmation email with ticket (async, don't wait)
-    sendRegistrationEmail(
-      populatedRegistration.participantId,
-      populatedRegistration.eventId,
-      populatedRegistration
-    ).catch(err => console.error('Email sending failed:', err));
+    // Send confirmation email only for non-merchandise events
+    // For merchandise, email is sent after organizer approves payment
+    if (event.eventType !== 'merchandise') {
+      sendRegistrationEmail(
+        populatedRegistration.participantId,
+        populatedRegistration.eventId,
+        populatedRegistration
+      ).catch(err => console.error('Email sending failed:', err));
+    }
 
     res.status(201).json({
       success: true,
-      message: 'Registration successful. Confirmation email sent.',
+      message: event.eventType === 'merchandise'
+        ? 'Order placed! Please upload payment proof to complete your purchase.'
+        : 'Registration successful. Confirmation email sent.',
       registration: populatedRegistration,
     });
   } catch (error) {
@@ -400,7 +407,9 @@ const getPaymentApprovalRequests = async (req, res) => {
 // @access  Private (Organizer only)
 const approvePayment = async (req, res) => {
   try {
-    const registration = await Registration.findById(req.params.id).populate('eventId');
+    const registration = await Registration.findById(req.params.id)
+      .populate('eventId')
+      .populate('participantId', 'firstName lastName email');
     if (!registration) {
       return res.status(404).json({ message: 'Registration not found' });
     }
@@ -425,24 +434,34 @@ const approvePayment = async (req, res) => {
     registration.paymentApprovedAt = new Date();
     registration.paymentDate = new Date();
 
-    // Generate ticket ID if not exists
+    // Generate ticket ID on approval
     if (!registration.ticketId) {
       registration.ticketId = generateTicketId();
     }
 
-    await registration.save();
-
-    // Decrement stock for merchandise
-    if (event.eventType === 'merchandise' && event.registrationLimit > 0) {
-      event.registrationLimit -= 1;
+    // Decrement stock for the matching variant
+    if (event.eventType === 'merchandise' && registration.merchandiseOrder) {
+      const variantIndex = event.merchandiseDetails?.variants?.findIndex(
+        v => v.size === registration.merchandiseOrder.size && v.color === registration.merchandiseOrder.color
+      );
+      if (variantIndex !== undefined && variantIndex !== -1) {
+        event.merchandiseDetails.variants[variantIndex].stockQuantity -= (registration.merchandiseOrder.quantity || 1);
+      }
       await event.save();
     }
 
-    // TODO: Send confirmation email with QR code
+    await registration.save();
+
+    // Send confirmation email with QR code on approval
+    sendRegistrationEmail(
+      registration.participantId,
+      registration.eventId,
+      registration
+    ).catch(err => console.error('Approval email sending failed:', err));
 
     res.status(200).json({
       success: true,
-      message: 'Payment approved successfully. Ticket generated.',
+      message: 'Payment approved successfully. Ticket generated and email sent.',
       registration,
     });
   } catch (error) {
@@ -462,7 +481,9 @@ const rejectPayment = async (req, res) => {
       return res.status(400).json({ message: 'Rejection reason is required' });
     }
 
-    const registration = await Registration.findById(req.params.id).populate('eventId');
+    const registration = await Registration.findById(req.params.id)
+      .populate('eventId')
+      .populate('participantId', 'firstName lastName email');
     if (!registration) {
       return res.status(404).json({ message: 'Registration not found' });
     }
@@ -474,21 +495,31 @@ const rejectPayment = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized' });
     }
 
-    // Update registration status
+    // Update registration - clear payment proof so user can re-upload
     registration.paymentApprovalStatus = 'rejected';
-    registration.paymentStatus = 'failed';
-    registration.status = 'cancelled';
+    registration.paymentStatus = 'pending';
+    registration.status = 'pending'; // Keep as pending, not cancelled - allow re-upload
     registration.paymentRejectionReason = reason;
+    registration.paymentProof = null; // Clear proof so they can re-upload
+    registration.paymentProofUploadedAt = null;
     registration.paymentApprovedBy = req.user._id;
     registration.paymentApprovedAt = new Date();
 
     await registration.save();
 
-    // TODO: Send rejection email
+    // Send rejection email
+    const { sendPaymentRejectedEmail } = require('../utils/emailService');
+    if (sendPaymentRejectedEmail) {
+      sendPaymentRejectedEmail(
+        registration.participantId,
+        event,
+        reason
+      ).catch(err => console.error('Rejection email sending failed:', err));
+    }
 
     res.status(200).json({
       success: true,
-      message: 'Payment rejected',
+      message: 'Payment rejected. User can re-upload payment proof.',
       registration,
     });
   } catch (error) {

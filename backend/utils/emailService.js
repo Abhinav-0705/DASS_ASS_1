@@ -20,7 +20,7 @@ const createTransporter = () => {
         pass: process.env.EMAIL_PASSWORD,
       },
     });
-    
+
     console.log('✅ Email transporter created successfully');
     return transporter;
   } catch (error) {
@@ -55,21 +55,12 @@ const generateTicketId = () => {
 // Send event registration confirmation email
 const sendRegistrationEmail = async (participant, event, registration) => {
   try {
-    // For development, just log the email (skip actual sending)
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('\n=== EMAIL NOTIFICATION (DEV MODE) ===');
-      console.log(`To: ${participant.email}`);
-      console.log(`Subject: Registration Confirmed - ${event.eventName}`);
-      console.log(`Ticket ID: ${registration.ticketId}`);
-      console.log('====================================\n');
-      return { success: true, message: 'Email logged (dev mode)' };
-    }
-
     const transporter = createTransporter();
-    
-    // If transporter creation failed, log and return
     if (!transporter) {
-      console.log('Email transporter not available, skipping email send');
+      console.log('[EMAIL] Transporter not configured, logging instead:');
+      console.log(`  To: ${participant.email}`);
+      console.log(`  Subject: Registration Confirmed - ${event.eventName}`);
+      console.log(`  Ticket ID: ${registration.ticketId}`);
       return { success: false, message: 'Email not configured' };
     }
 
@@ -142,17 +133,12 @@ const sendRegistrationEmail = async (participant, event, registration) => {
 // Send organizer credentials email
 const sendOrganizerCredentials = async (organizerEmail, loginEmail, password, organizerName) => {
   try {
-    // For development, just log
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('\n=== ORGANIZER CREDENTIALS (DEV MODE) ===');
-      console.log(`To: ${organizerEmail}`);
-      console.log(`Login Email: ${loginEmail}`);
-      console.log(`Password: ${password}`);
-      console.log('========================================\n');
-      return { success: true, message: 'Credentials logged (dev mode)' };
-    }
-
     const transporter = createTransporter();
+    if (!transporter) {
+      console.log('[EMAIL] Transporter not configured, logging credentials:');
+      console.log(`  To: ${organizerEmail}, Login: ${loginEmail}, Password: ${password}`);
+      return { success: false, message: 'Email not configured' };
+    }
 
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -188,16 +174,11 @@ const sendOrganizerCredentials = async (organizerEmail, loginEmail, password, or
 // Send password reset approved email
 const sendPasswordResetApproved = async (organizerEmail, organizerName, newPassword) => {
   try {
-    // For development, just log
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('\n=== PASSWORD RESET APPROVED (DEV MODE) ===');
-      console.log(`To: ${organizerEmail}`);
-      console.log(`New Password: ${newPassword}`);
-      console.log('==========================================\n');
-      return { success: true, message: 'Email logged (dev mode)' };
-    }
-
     const transporter = createTransporter();
+    if (!transporter) {
+      console.log(`[EMAIL] Transporter not configured, skipping password reset approved email to ${organizerEmail}`);
+      return { success: false, message: 'Email not configured' };
+    }
 
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -240,16 +221,11 @@ const sendPasswordResetApproved = async (organizerEmail, organizerName, newPassw
 // Send password reset rejected email
 const sendPasswordResetRejected = async (organizerEmail, organizerName, reason) => {
   try {
-    // For development, just log
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('\n=== PASSWORD RESET REJECTED (DEV MODE) ===');
-      console.log(`To: ${organizerEmail}`);
-      console.log(`Reason: ${reason}`);
-      console.log('==========================================\n');
-      return { success: true, message: 'Email logged (dev mode)' };
-    }
-
     const transporter = createTransporter();
+    if (!transporter) {
+      console.log(`[EMAIL] Transporter not configured, skipping rejection email to ${organizerEmail}`);
+      return { success: false, message: 'Email not configured' };
+    }
 
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -287,11 +263,51 @@ const sendPasswordResetRejected = async (organizerEmail, organizerName, reason) 
   }
 };
 
+// Send payment rejected email (participant can re-upload)
+const sendPaymentRejectedEmail = async (participant, event, reason) => {
+  try {
+    const transporter = createTransporter();
+    if (!transporter) {
+      console.log(`[EMAIL] Transporter not configured, logging payment rejection email:`);
+      console.log(`  To: ${participant.email}, Event: ${event.eventName}, Reason: ${reason}`);
+      return { success: false, message: 'Email not configured' };
+    }
+
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #f44336;">Payment Proof Rejected</h2>
+        <p>Dear ${participant.firstName} ${participant.lastName},</p>
+        <p>Your payment proof for <strong>${event.eventName}</strong> has been reviewed and rejected by the organizer.</p>
+        
+        <div style="background: #f8d7da; border: 1px solid #f5c6cb; padding: 20px; border-radius: 5px; margin: 20px 0;">
+          <h3 style="color: #721c24; margin-top: 0;">Reason for Rejection</h3>
+          <p style="color: #721c24;">${reason || 'No specific reason provided.'}</p>
+        </div>
+
+        <p><strong>What to do next:</strong> Please log in and upload a valid payment proof to complete your order.</p>
+        <p><a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/login" style="background: #2196F3; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 20px 0;">Upload New Payment Proof</a></p>
+      </div>
+    `;
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_FROM || process.env.EMAIL_USER || 'noreply@felicity.com',
+      to: participant.email,
+      subject: `❌ Payment Rejected - ${event.eventName}`,
+      html: emailHtml,
+    });
+    return { success: true };
+  } catch (error) {
+    console.error('Error sending payment rejected email:', error);
+    return { success: false, message: error.message };
+  }
+};
+
 module.exports = {
   sendRegistrationEmail,
   sendOrganizerCredentials,
   sendPasswordResetApproved,
   sendPasswordResetRejected,
+  sendPaymentRejectedEmail,
   generateTicketId,
   generateQRCode,
 };
